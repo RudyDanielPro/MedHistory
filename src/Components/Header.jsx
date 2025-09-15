@@ -21,15 +21,15 @@ export const Header = ({
   ];
 
   return (
-    <header className="sticky top-0 z-50 text-black shadow-lg bg-gradient-to-r ">
+    <header className="sticky top-0 z-50 text-white shadow-lg bg-gradient-to-r">
       <div className="container px-4 py-4 mx-auto">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-logo-gradien to-logo-primary">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-green-500">
               <i className="text-lg text-white fas fa-user-md"></i>
             </div>
-            <span className="font-serif text-2xl font-bold text-transparent bg-gradient-to-r from-yellow-300 to-green-500 bg-clip-text">
+            <span className="text-2xl font-bold font-heading gradient-text">
               MedHistory
             </span>
           </Link>
@@ -44,18 +44,15 @@ export const Header = ({
                     to={item.path}
                     className={`font-medium transition-colors ${
                       isActive(item.path)
-                        ? "text-text-inicio border-text-inicio-border"
-                        : "text-text-rest-navVar hover:text-blue-300 border-text-inicio-border"
+                        ? "text-primary"
+                        : "text-foreground hover:text-primary"
                     }`}
                   >
                     {item.label}
                   </Link>
                 ))}
                 <div className="flex items-center space-x-4">
-                  <button className="px-4 py-2 text-sm font-medium transition-colors border border-white rounded-md bg-register-bg hover:bg-register-bg-hover hover:text-white text-text-rest-navVar">
-                    <Link to="/register">Registrarse</Link>
-                  </button>
-                  <button className="px-4 py-2 text-sm font-medium text-white transition-colors rounded-md bg-sign-bg hover:bg-sign-bg/90">
+                  <button className="px-4 py-2 font-medium text-white rounded-md transition-color hover:bg-button-iniciar-secion/80 bg-button-iniciar-secion">
                     <Link to="/login">Iniciar sesión</Link>
                   </button>
                 </div>
