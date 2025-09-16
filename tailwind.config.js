@@ -8,6 +8,7 @@ export default {
     extend: {
       colors: {
         'button-iniciar-secion':'hsl(187 64% 30%)',
+        'bg-nav-var':'hsl(240 20% 97%)',
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

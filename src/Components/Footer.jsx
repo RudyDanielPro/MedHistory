@@ -146,7 +146,8 @@ export function Footer  ({ isAuthenticated = false })  {
         <div className="pt-8 mt-8 border-t border-secondary-foreground/20">
           <div className="flex flex-col items-center justify-between space-y-4 md:flex-row md:space-y-0">
             <div className="text-sm text-secondary-foreground/60">
-              © {currentYear} MedHistory. Todos los derechos reservados.
+              © {currentYear} MedHistory. Todos los derechos reservados. Desarrollado por estudiantes de la UCI.<br />
+                    Alián Torres Méndez y Rudy Daniel Carballo Miranda.
             </div>
             <div className="flex space-x-6 text-sm">
               <Link 
