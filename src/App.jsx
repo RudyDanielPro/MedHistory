@@ -2,6 +2,8 @@ import { About } from './Pages/About';
 import { HomePage } from './Pages/HomePage'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { TermsAndConditions } from './Pages/TermsAndConditions';
+import { Contact } from './Pages/Contact';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 
 
@@ -14,6 +16,7 @@ export function App(){
         <Route path='/' element={<HomePage/>}/>
         <Route path='/about' element={<About/>}/>
         <Route path='/terms' element={<TermsAndConditions/>}/>
+        <Route path='/contact' element={<Contact/>}/>
       </Routes>
     </Router>
 
