@@ -68,15 +68,7 @@ export function Footer  ({ isAuthenticated = false })  {
                     >
                       Contacto
                     </Link>
-                  </li>
-                  <li>
-                    <Link 
-                      to="/register" 
-                      className="transition-colors text-secondary-foreground/80 hover:text-accent"
-                    >
-                      Registrarse
-                    </Link>
-                  </li>
+                  </li>                 
                 </>
               ) : (
                 <>
@@ -119,7 +111,8 @@ export function Footer  ({ isAuthenticated = false })  {
                 <i className="mt-1 fas fa-envelope text-accent"></i>
                 <div>
                   <p className="text-sm text-secondary-foreground/80">
-                    soporte@medhistory.com
+                    rudydanielcarballo@gmail.com <br />
+                    mendez10dev@gmail.com
                   </p>
                 </div>
               </li>
@@ -127,7 +120,7 @@ export function Footer  ({ isAuthenticated = false })  {
                 <i className="mt-1 fas fa-phone text-accent"></i>
                 <div>
                   <p className="text-sm text-secondary-foreground/80">
-                    +53 5555-5555
+                    +53 56498546  , +53 58030795
                   </p>
                 </div>
               </li>
