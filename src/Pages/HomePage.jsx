@@ -88,10 +88,10 @@ const MedicalCarousel = ({ items }) => {
 // Componente FeatureCard implementado localmente
 const FeatureCard = ({ icon, title, description }) => {
   return (
-    <div className="bg-card text-card-foreground rounded-xl p-6 shadow-md hover:shadow-lg transition-all border border-border/50 hover:border-primary/30 group">
+    <div className="medical-card p-6 text-center hover:scale-105 transition-transform duration-300">
       <div className="flex flex-col items-center text-center">
-        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-          <i className={`${icon} text-2xl text-primary`}></i>
+        <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center mx-auto mb-4">
+          <i className={`${icon} text-2xl text-white`}></i>
         </div>
         <h3 className="text-xl font-semibold mb-2">{title}</h3>
         <p className="text-muted-foreground">{description}</p>
