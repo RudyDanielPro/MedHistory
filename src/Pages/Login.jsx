@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Footer } from "../Components/Footer";
 import { Header } from "../Components/Header";
 
 // Implementación directa de useToast
 const useToast = () => {
-  const toast = (options) => {
+  const toast = useCallback((options) => {
     const { title, description, variant = "default" } = options;
     
     // Crear elemento de toast
@@ -34,7 +34,7 @@ const useToast = () => {
     toastElement.querySelector(".toast-close").addEventListener("click", () => {
       toastElement.remove();
     });
-  };
+  }, []);
   
   const createToastContainer = () => {
     const container = document.createElement("div");
@@ -45,6 +45,56 @@ const useToast = () => {
   };
   
   return { toast };
+};
+
+// Custom Button component
+const Button = ({ children, className = "", disabled = false, ...props }) => {
+  return (
+    <button 
+      className={`px-4 py-2 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+      disabled={disabled}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+
+// Custom Input component
+const Input = ({ className = "", ...props }) => {
+  return (
+    <input
+      className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      {...props}
+    />
+  );
+};
+
+// Custom Label component
+const Label = ({ children, className = "", ...props }) => {
+  return (
+    <label
+      className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${className}`}
+      {...props}
+    >
+      {children}
+    </label>
+  );
+};
+
+// Custom Checkbox component
+const Checkbox = ({ className = "", checked, onCheckedChange, ...props }) => {
+  return (
+    <div className="flex items-center space-x-2">
+      <input
+        type="checkbox"
+        className={`h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary ${className}`}
+        checked={checked}
+        onChange={(e) => onCheckedChange(e.target.checked)}
+        {...props}
+      />
+    </div>
+  );
 };
 
 const Login = () => {
@@ -89,26 +139,43 @@ const Login = () => {
 
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Simulate user types for demo
-      const isDoctor = formData.email.includes("doctor") || formData.email.includes("dr");
-      const userType = isDoctor ? "doctor" : "student";
-      
-      toast({
-        title: "Inicio de sesión exitoso",
-        description: `Bienvenido de vuelta, ${userType === 'doctor' ? 'Doctor' : 'Estudiante'}.`,
-      });
+      const password = formData.password;
+      const email = formData.email.toLowerCase();
+      const url = "http://rudy-backend-e2itqr-09d86f-31-97-130-237.traefik.me/login"
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      })
+      const data = await response.json();
 
-      // Redirect based on user type
-      if (userType === "doctor") {
-        navigate("/doctor/dashboard");
-      } else {
-        navigate("/student/dashboard");
+
+      if(response.ok) {
+        const { token, message } = data;
+        localStorage.setItem("authToken", token);
+        localStorage.setItem("user", JSON.stringify(message.email));
+        
+        toast({
+          title: "Inicio de sesión exitoso",
+          description: `Bienvenido de nuevo, ${message.email}!`,
+          variant: "default",
+        });
+
+        if (message.role === "doctor") {
+          navigate("/doctor/dashboard");
+        } else if(message.role === "student") {
+          navigate("/student/dashboard");
+        } else {
+          navigate("/admin/dashboard");
+        }
       }
-      
-    } catch (error) {
-      toast({
+
+      } catch (error) {
+        console.error("Authentication error:", error); // Log the error for debugging
+        toast({
         title: "Error de autenticación",
         description: "Credenciales inválidas. Verifica tu correo y contraseña.",
         variant: "destructive",
@@ -131,55 +198,7 @@ const Login = () => {
     }
   };
 
-  // Custom Button component
-  const Button = ({ children, className = "", disabled = false, ...props }) => {
-    return (
-      <button 
-        className={`px-4 py-2 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
-        disabled={disabled}
-        {...props}
-      >
-        {children}
-      </button>
-    );
-  };
 
-  // Custom Input component
-  const Input = ({ className = "", ...props }) => {
-    return (
-      <input
-        className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
-        {...props}
-      />
-    );
-  };
-
-  // Custom Label component
-  const Label = ({ children, className = "", ...props }) => {
-    return (
-      <label
-        className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${className}`}
-        {...props}
-      >
-        {children}
-      </label>
-    );
-  };
-
-  // Custom Checkbox component
-  const Checkbox = ({ className = "", checked, onCheckedChange, ...props }) => {
-    return (
-      <div className="flex items-center space-x-2">
-        <input
-          type="checkbox"
-          className={`h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary ${className}`}
-          checked={checked}
-          onChange={(e) => onCheckedChange(e.target.checked)}
-          {...props}
-        />
-      </div>
-    );
-  };
 
   return (
     <div className="min-h-screen bg-background">
