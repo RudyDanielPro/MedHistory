@@ -217,12 +217,6 @@ export function HomePage () {
               de medicina por parte de doctores especializados.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="medical-button text-lg px-8 py-4" asChild>
-                <Link to="/register">
-                  <i className="fas fa-user-plus mr-2"></i>
-                  Comenzar Ahora
-                </Link>
-              </Button>
               <Button 
                 size="lg" 
                 variant="outline" 
@@ -295,16 +289,6 @@ export function HomePage () {
             MedHistory para mejorar la formación de futuros doctores.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-4"
-              asChild
-            >
-              <Link to="/register">
-                <i className="fas fa-rocket mr-2"></i>
-                Registrarse Gratis
-              </Link>
-            </Button>
             <Button 
               size="lg" 
               variant="outline" 
