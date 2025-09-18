@@ -293,8 +293,8 @@ export function HomePage () {
               size="lg" 
               variant="outline" 
               className="border-white/30 text-white hover:bg-white/10 text-lg px-8 py-4"
-              asChild
-            >
+              asChild>
+                
               <Link to="/contact">
                 <i className="fas fa-envelope mr-2"></i>
                 Contactar Equipo
