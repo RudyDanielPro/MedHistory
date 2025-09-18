@@ -9,6 +9,8 @@ import {StudentNotifications} from './Pages/StudentNotifications';
 import { DoctorDashboard } from './Pages/DoctorDashboard';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import Login from './Pages/Login';
+import {Register} from './Pages/Register';
+import AdminDashboard from './Pages/AdminDashboard';
 
 
 
@@ -31,6 +33,11 @@ export function App(){
 
         {/* Doctor Routes */}
         <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+
+
+        {/*Adminind Routes*/}
+        <Route path="/admin/register" element={<Register />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
       </Routes>
     </Router>
