@@ -5,8 +5,10 @@ import { TermsAndConditions } from './Pages/TermsAndConditions';
 import { PrivacyPolicy } from './Pages/PrivacyPolicy';
 import { Contact } from './Pages/Contact';
 import { StudentDashboard } from './Pages/StudentDashboard';
-import {StudentNotifications} from './Pages/StudentNotifications';
+import { StudentNotifications } from './Pages/StudentNotifications';
+import { StudentProfile } from './Pages/StudentProfile';
 import { DoctorDashboard } from './Pages/DoctorDashboard';
+import { DoctorProfile } from './Pages/DoctorProfile';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import Login from './Pages/Login';
 
@@ -28,9 +30,11 @@ export function App(){
         {/* Student Routes */}
         <Route path="/student/dashboard" element={<StudentDashboard />} />
         <Route path="/student/notifications" element={<StudentNotifications />} />
+        <Route path="/student/profile" element={<StudentProfile />} />
 
         {/* Doctor Routes */}
         <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+        <Route path="/doctor/profile" element={<DoctorProfile />} />
 
       </Routes>
     </Router>

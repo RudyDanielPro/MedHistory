@@ -378,7 +378,9 @@ export function StudentDashboard () {
         </div>
       </section>
 
-      <Footer isAuthenticated={true} />
+      <Footer 
+      isAuthenticated={true} 
+      isStudent = {true}  />
     </div>
   );
 };
