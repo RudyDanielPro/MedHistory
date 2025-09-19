@@ -1,7 +1,37 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
-// Componente Button
+// Utilidad para combinar clases
+const cn = (...classes) => classes.filter(Boolean).join(' ');
+
+// Componente Button con los estilos proporcionados
+const buttonVariants = ({ variant = "default", size = "default", className = "" }) => {
+  const baseClasses = "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0";
+  
+  const variantClasses = {
+    default: "bg-primary text-primary-foreground hover:bg-primary/90",
+    destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+    outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+    secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+    ghost: "hover:bg-accent hover:text-accent-foreground",
+    link: "text-primary underline-offset-4 hover:underline",
+  };
+  
+  const sizeClasses = {
+    default: "h-10 px-4 py-2",
+    sm: "h-9 rounded-md px-3",
+    lg: "h-11 rounded-md px-8",
+    icon: "h-10 w-10",
+  };
+  
+  return cn(
+    baseClasses,
+    variantClasses[variant] || variantClasses.default,
+    sizeClasses[size] || sizeClasses.default,
+    className
+  );
+};
+
 const Button = ({ 
   variant = "default", 
   size = "default", 
@@ -11,20 +41,7 @@ const Button = ({
   onClick,
   ...props 
 }) => {
-  const baseClasses = "btn";
-  const variantClasses = {
-    default: "btn-default",
-    outline: "btn-outline",
-    destructive: "btn-destructive"
-  };
-  const sizeClasses = {
-    default: "",
-    sm: "btn-sm",
-    lg: "btn-lg",
-    icon: "btn-icon"
-  };
-  
-  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+  const classes = buttonVariants({ variant, size, className });
   
   if (asChild) {
     return React.cloneElement(React.Children.only(children), {
@@ -41,20 +58,30 @@ const Button = ({
   );
 };
 
-// Componente Badge
+// Componente Badge con los estilos proporcionados
+const badgeVariants = ({ variant = "default", className = "" }) => {
+  const baseClasses = "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2";
+  
+  const variantClasses = {
+    default: "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+    secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+    destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+    outline: "text-foreground",
+  };
+  
+  return cn(
+    baseClasses,
+    variantClasses[variant] || variantClasses.default,
+    className
+  );
+};
+
 const Badge = ({ 
   variant = "default", 
   className = "", 
   children 
 }) => {
-  const baseClasses = "badge";
-  const variantClasses = {
-    default: "badge-default",
-    destructive: "badge-destructive",
-    outline: "badge-outline"
-  };
-  
-  const classes = `${baseClasses} ${variantClasses[variant]} ${className}`;
+  const classes = badgeVariants({ variant, className });
   
   return (
     <span className={classes}>
@@ -63,54 +90,69 @@ const Badge = ({
   );
 };
 
-// Componente DropdownMenu
-const DropdownMenu = ({ children }) => {
+// Componente DropdownMenu mejorado
+const DropdownMenu = ({ children, isOpen, onClose }) => {
+  // Cerrar el menú al hacer clic fuera de él
+  const menuRef = React.useRef(null);
+  
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
   return (
-    <div className="dropdown-menu">
-      {children}
+    <div ref={menuRef} className="absolute right-0 z-50 w-48 mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
+      <div className="py-1">
+        {children}
+      </div>
     </div>
   );
 };
 
 // Componente DropdownMenuTrigger
-const DropdownMenuTrigger = ({ asChild = false, children, ...props }) => {
+const DropdownMenuTrigger = ({ asChild = false, children, onClick, ...props }) => {
   if (asChild) {
     return React.cloneElement(React.Children.only(children), {
       ...props,
-      className: `${children.props.className || ''} dropdown-trigger`
-    });
-  }
-  
-  return (
-    <button className="dropdown-trigger" {...props}>
-      {children}
-    </button>
-  );
-};
-
-// Componente DropdownMenuContent
-const DropdownMenuContent = ({ align = "start", className = "", children }) => {
-  const alignClass = align === "end" ? "dropdown-content-end" : "dropdown-content-start";
-  
-  return (
-    <div className={`dropdown-content ${alignClass} ${className}`}>
-      {children}
-    </div>
-  );
-};
-
-// Componente DropdownMenuItem
-const DropdownMenuItem = ({ asChild = false, children, onClick, ...props }) => {
-  if (asChild) {
-    return React.cloneElement(React.Children.only(children), {
-      ...props,
-      className: `${children.props.className || ''} dropdown-item`,
+      className: `${children.props.className || ''} cursor-pointer`,
       onClick
     });
   }
   
   return (
-    <button className="dropdown-item" onClick={onClick} {...props}>
+    <button className="cursor-pointer" onClick={onClick} {...props}>
+      {children}
+    </button>
+  );
+};
+
+// Componente DropdownMenuItem
+const DropdownMenuItem = ({ asChild = false, children, onClick, ...props }) => {
+  const baseClasses = "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900";
+  
+  if (asChild) {
+    return React.cloneElement(React.Children.only(children), {
+      ...props,
+      className: `${children.props.className || ''} ${baseClasses}`,
+      onClick
+    });
+  }
+  
+  return (
+    <button className={baseClasses} onClick={onClick} {...props}>
       {children}
     </button>
   );
@@ -126,6 +168,7 @@ const Header = ({
 }) => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const isActive = (path) => location.pathname === path;
 
@@ -135,8 +178,16 @@ const Header = ({
     { path: "/contact", label: "Contacto" },
   ];
 
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const closeDropdown = () => {
+    setIsDropdownOpen(false);
+  };
+
   return (
-    React.createElement('header', { className: 'medical-nav sticky top-0 z-50' },
+    React.createElement('header', { className: 'medical-nav sticky top-0 z-50 bg-white border-b shadow-sm' },
       React.createElement('div', { className: 'container mx-auto px-4 py-4' },
         React.createElement('div', { className: 'flex items-center justify-between' },
           // Logo
@@ -162,8 +213,8 @@ const Header = ({
                     to: item.path,
                     className: `font-medium transition-colors ${
                       isActive(item.path)
-                        ? "text-primary"
-                        : "text-foreground hover:text-primary"
+                        ? "text-blue-600"
+                        : "text-gray-700 hover:text-blue-600"
                     }`
                   }, item.label)
                 ),
@@ -188,13 +239,24 @@ const Header = ({
                   )
                 ),
                 
-                userType === 'admin' && React.createElement(Button, { 
-                  variant: "outline",
-                  asChild: true 
-                },
-                  React.createElement(Link, { to: "/admin/dashboard" },
-                    React.createElement('i', { className: "fas fa-tachometer-alt mr-2" }),
-                    "Panel de Control"
+                userType === 'admin' && React.createElement(React.Fragment, null,
+                  React.createElement(Button, { 
+                    variant: "outline",
+                    asChild: true 
+                  },
+                    React.createElement(Link, { to: "/admin/register" },
+                      React.createElement('i', { className: "fas fa-user-plus mr-2" }),
+                      "Registrar usuario"
+                    )
+                  ),
+                  React.createElement(Button, { 
+                    variant: "outline",
+                    asChild: true 
+                  },
+                    React.createElement(Link, { to: "/admin/dashboard" },
+                      React.createElement('i', { className: "fas fa-tachometer-alt mr-2" }),
+                      "Panel de Control"
+                    )
                   )
                 ),
                 
@@ -214,26 +276,33 @@ const Header = ({
                   )
                 ),
 
-                // User Menu
-                React.createElement(DropdownMenu, null,
-                  React.createElement(DropdownMenuTrigger, { asChild: true },
+                // User Menu Dropdown
+                React.createElement('div', { className: "relative" },
+                  React.createElement(DropdownMenuTrigger, { onClick: toggleDropdown },
                     React.createElement(Button, { variant: "outline" },
                       React.createElement('i', { className: "fas fa-user mr-2" }),
                       userName,
                       React.createElement('i', { className: "fas fa-chevron-down ml-2" })
                     )
                   ),
-                  React.createElement(DropdownMenuContent, { 
-                    align: "end", 
-                    className: "bg-popover" 
-                  },
+                  React.createElement(DropdownMenu, { isOpen: isDropdownOpen, onClose: closeDropdown },
+                    // Mostrar perfil solo para no administradores
                     userType !== 'admin' && React.createElement(DropdownMenuItem, { asChild: true },
-                      React.createElement(Link, { to: `/${userType}/profile` },
+                      React.createElement(Link, { 
+                        to: `/${userType}/profile`,
+                        onClick: closeDropdown
+                      },
                         React.createElement('i', { className: "fas fa-user-cog mr-2" }),
                         "Perfil"
                       )
                     ),
-                    React.createElement(DropdownMenuItem, { onClick: onLogout },
+                    // Opción de cerrar sesión para todos los usuarios autenticados
+                    React.createElement(DropdownMenuItem, { 
+                      onClick: () => {
+                        onLogout?.();
+                        closeDropdown();
+                      }
+                    },
                       React.createElement('i', { className: "fas fa-sign-out-alt mr-2" }),
                       "Cerrar sesión"
                     )
@@ -256,7 +325,7 @@ const Header = ({
 
         // Mobile Navigation
         isMenuOpen && React.createElement('div', { 
-          className: "md:hidden mt-4 pb-4 border-t border-border pt-4" 
+          className: "md:hidden mt-4 pb-4 border-t border-gray-200 pt-4" 
         },
           !isAuthenticated ? (
             React.createElement('div', { className: "flex flex-col space-y-4" },
@@ -266,8 +335,8 @@ const Header = ({
                   to: item.path,
                   className: `font-medium transition-colors ${
                     isActive(item.path)
-                      ? "text-primary"
-                      : "text-foreground hover:text-primary"
+                      ? "text-blue-600"
+                      : "text-gray-700 hover:text-blue-600"
                   }`,
                   onClick: () => setIsMenuOpen(false)
                 }, item.label)
@@ -287,23 +356,33 @@ const Header = ({
             React.createElement('div', { className: "flex flex-col space-y-4" },
               userType === 'student' && React.createElement(Link, {
                 to: "/student/consultation",
-                className: "flex items-center text-foreground hover:text-primary",
+                className: "flex items-center text-gray-700 hover:text-blue-600",
                 onClick: () => setIsMenuOpen(false)
               },
                 React.createElement('i', { className: "fas fa-file-medical mr-2" }),
                 "Realizar consulta"
               ),
-              userType === 'admin' && React.createElement(Link, {
-                to: "/admin/dashboard",
-                className: "flex items-center text-foreground hover:text-primary",
-                onClick: () => setIsMenuOpen(false)
-              },
-                React.createElement('i', { className: "fas fa-tachometer-alt mr-2" }),
-                "Panel de Control"
+              userType === 'admin' && React.createElement(React.Fragment, null,
+                React.createElement(Link, {
+                  to: "/admin/register",
+                  className: "flex items-center text-gray-700 hover:text-blue-600",
+                  onClick: () => setIsMenuOpen(false)
+                },
+                  React.createElement('i', { className: "fas fa-user-plus mr-2" }),
+                  "Registrar usuario"
+                ),
+                React.createElement(Link, {
+                  to: "/admin/dashboard",
+                  className: "flex items-center text-gray-700 hover:text-blue-600",
+                  onClick: () => setIsMenuOpen(false)
+                },
+                  React.createElement('i', { className: "fas fa-tachometer-alt mr-2" }),
+                  "Panel de Control"
+                )
               ),
               userType !== 'admin' && React.createElement(Link, {
                 to: `/${userType}/notifications`,
-                className: "flex items-center text-foreground hover:text-primary",
+                className: "flex items-center text-gray-700 hover:text-blue-600",
                 onClick: () => setIsMenuOpen(false)
               },
                 React.createElement('i', { className: "fas fa-bell mr-2" }),
@@ -315,7 +394,7 @@ const Header = ({
               ),
               userType !== 'admin' && React.createElement(Link, {
                 to: `/${userType}/profile`,
-                className: "flex items-center text-foreground hover:text-primary",
+                className: "flex items-center text-gray-700 hover:text-blue-600",
                 onClick: () => setIsMenuOpen(false)
               },
                 React.createElement('i', { className: "fas fa-user-cog mr-2" }),
@@ -326,7 +405,7 @@ const Header = ({
                   onLogout?.();
                   setIsMenuOpen(false);
                 },
-                className: "flex items-center text-foreground hover:text-primary text-left"
+                className: "flex items-center text-gray-700 hover:text-blue-600 text-left"
               },
                 React.createElement('i', { className: "fas fa-sign-out-alt mr-2" }),
                 "Cerrar sesión"
