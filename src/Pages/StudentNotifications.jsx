@@ -186,7 +186,9 @@ export function StudentNotifications () {
         </div>
       </section>
 
-      <Footer isAuthenticated={true} />
+      <Footer 
+      isAuthenticated={true} 
+      isStudent = {true}  />
     </div>
   );
 };

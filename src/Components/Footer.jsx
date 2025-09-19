@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-export function Footer  ({ isAuthenticated = false })  {
+export function Footer  ({ isAuthenticated = false, isStudent = false})  {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -43,7 +43,8 @@ export function Footer  ({ isAuthenticated = false })  {
               Enlaces rápidos
             </h4>
             <ul className="space-y-3">
-              {!isAuthenticated ? (
+              {/* Enlaces para usuarios NO autenticados */}
+              {!isAuthenticated && (
                 <>
                   <li>
                     <Link 
@@ -70,11 +71,14 @@ export function Footer  ({ isAuthenticated = false })  {
                     </Link>
                   </li>                 
                 </>
-              ) : (
+              )}
+              
+              {/* Enlaces para estudiantes autenticados */}
+              {isAuthenticated && isStudent === true && (
                 <>
                   <li>
                     <Link 
-                      to="/dashboard" 
+                      to="/student/dashboard" 
                       className="transition-colors text-secondary-foreground/80 hover:text-accent"
                     >
                       Dashboard
@@ -82,7 +86,7 @@ export function Footer  ({ isAuthenticated = false })  {
                   </li>
                   <li>
                     <Link 
-                      to="/notifications" 
+                      to="/student/notifications" 
                       className="transition-colors text-secondary-foreground/80 hover:text-accent"
                     >
                       Notificaciones
@@ -90,7 +94,37 @@ export function Footer  ({ isAuthenticated = false })  {
                   </li>
                   <li>
                     <Link 
-                      to="/profile" 
+                      to="/student/profile" 
+                      className="transition-colors text-secondary-foreground/80 hover:text-accent"
+                    >
+                      Mi Perfil
+                    </Link>
+                  </li>
+                </>
+              )}
+              
+              {/* Enlaces para doctores autenticados */}
+              {isAuthenticated && isStudent === false && (
+                <>
+                  <li>
+                    <Link 
+                      to="/doctor/dashboard" 
+                      className="transition-colors text-secondary-foreground/80 hover:text-accent"
+                    >
+                      Dashboard
+                    </Link>
+                  </li>
+                  <li>
+                    <Link 
+                      to="/doctor/notifications" 
+                      className="transition-colors text-secondary-foreground/80 hover:text-accent"
+                    >
+                      Notificaciones
+                    </Link>
+                  </li>
+                  <li>
+                    <Link 
+                      to="/doctor/profile" 
                       className="transition-colors text-secondary-foreground/80 hover:text-accent"
                     >
                       Mi Perfil

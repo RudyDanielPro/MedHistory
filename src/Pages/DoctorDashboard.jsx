@@ -462,7 +462,9 @@ export function DoctorDashboard () {
         </div>
       </section>
 
-      <Footer isAuthenticated={true} />
+      <Footer 
+      isAuthenticated={true}
+      isStudent = {false} />
     </div>
   );
 };
