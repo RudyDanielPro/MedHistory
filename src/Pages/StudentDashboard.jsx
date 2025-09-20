@@ -170,61 +170,36 @@ export function StudentDashboard () {
 
       {/* Welcome Section */}
       <section className="py-12 hero-section">
-        <div className="container mx-auto px-4">
+        <div className="container px-4 mx-auto">
           <div className="text-center text-white">
-            <h1 className="text-4xl md:text-5xl font-heading font-bold mb-4">
-              <i className="fas fa-tachometer-alt mr-3"></i>
+            <h1 className="mb-4 text-4xl font-bold md:text-5xl font-heading">
+              <i className="mr-3 fas fa-tachometer-alt"></i>
               Dashboard Estudiante
             </h1>
             <p className="text-xl text-white/90">
               Bienvenido de vuelta, <strong>{userName}</strong>
             </p>
-            <p className="text-lg text-white/80 mt-2">
+            <p className="mt-2 text-lg text-white/80">
               Gestiona tus consultas médicas y revisa tus evaluaciones
             </p>
           </div>
         </div>
-      </section>
-
-      {/* Quick Actions */}
-      <section className="py-8 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="medical-button" asChild>
-              <Link to="/student/consultation">
-                <i className="fas fa-plus mr-2"></i>
-                Nueva Consulta
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link to="/student/notifications">
-                <i className="fas fa-bell mr-2"></i>
-                Ver Notificaciones
-                {notificationCount > 0 && (
-                  <Badge variant="destructive" className="ml-2">
-                    {notificationCount}
-                  </Badge>
-                )}
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+      </section>    
 
       {/* Stats Cards */}
       <section className="py-8 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-heading font-bold text-foreground mb-6 text-center">
+        <div className="container px-4 mx-auto">
+          <h2 className="mb-6 text-2xl font-bold text-center font-heading text-foreground">
             Resumen de Actividad
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             {quickStats.map((stat, index) => (
-              <Card key={index} className="medical-card text-center">
+              <Card key={index} className="text-center medical-card">
                 <CardContent className="p-6">
                   <div className={`w-16 h-16 ${stat.color} rounded-full flex items-center justify-center mx-auto mb-4`}>
                     <i className={`${stat.icon} text-white text-2xl`}></i>
                   </div>
-                  <div className="text-3xl font-bold text-foreground mb-2">
+                  <div className="mb-2 text-3xl font-bold text-foreground">
                     {stat.value}
                   </div>
                   <div className="text-muted-foreground">
@@ -239,32 +214,26 @@ export function StudentDashboard () {
 
       {/* Recent Consultations */}
       <section className="py-12 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-heading font-bold text-foreground">
-              <i className="fas fa-history mr-3 text-primary"></i>
+        <div className="container px-4 mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold font-heading text-foreground">
+              <i className="mr-3 fas fa-history text-primary"></i>
               Consultas Recientes
-            </h2>
-            <Button variant="outline" asChild>
-              <Link to="/student/consultations">
-                Ver todas
-                <i className="fas fa-arrow-right ml-2"></i>
-              </Link>
-            </Button>
+            </h2>            
           </div>
 
           <div className="grid gap-6">
             {recentConsultations.map((consultation) => (
               <Card key={consultation.id} className="medical-card">
                 <CardHeader>
-                  <div className="flex justify-between items-start">
+                  <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-xl text-foreground">
-                        <i className="fas fa-user mr-2 text-primary"></i>
+                        <i className="mr-2 fas fa-user text-primary"></i>
                         Paciente: {consultation.patientName}
                       </CardTitle>
-                      <p className="text-muted-foreground mt-1">
-                        <i className="fas fa-calendar mr-2"></i>
+                      <p className="mt-1 text-muted-foreground">
+                        <i className="mr-2 fas fa-calendar"></i>
                         {new Date(consultation.date).toLocaleDateString('es-ES', {
                           weekday: 'long',
                           year: 'numeric',
@@ -283,18 +252,18 @@ export function StudentDashboard () {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <div>
-                      <p className="text-sm font-semibold text-foreground mb-1">
+                      <p className="mb-1 text-sm font-semibold text-foreground">
                         Doctor Evaluador:
                       </p>
                       <p className="text-muted-foreground">
-                        <i className="fas fa-user-md mr-1"></i>
+                        <i className="mr-1 fas fa-user-md"></i>
                         {consultation.doctor}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground mb-1">
+                      <p className="mb-1 text-sm font-semibold text-foreground">
                         Calificación:
                       </p>
                       {consultation.grade ? (
@@ -314,14 +283,14 @@ export function StudentDashboard () {
                         </div>
                       ) : (
                         <p className="text-muted-foreground">
-                          <i className="fas fa-hourglass-half mr-1"></i>
+                          <i className="mr-1 fas fa-hourglass-half"></i>
                           Pendiente de evaluación
                         </p>
                       )}
                     </div>
                     <div className="flex justify-end">
                       <Button variant="outline" size="sm">
-                        <i className="fas fa-eye mr-2"></i>
+                        <i className="mr-2 fas fa-eye"></i>
                         Ver detalles
                       </Button>
                     </div>
@@ -335,41 +304,41 @@ export function StudentDashboard () {
 
       {/* Tips Section */}
       <section className="py-12 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-heading font-bold text-foreground mb-8 text-center">
-            <i className="fas fa-lightbulb mr-3 text-accent"></i>
+        <div className="container px-4 mx-auto">
+          <h2 className="mb-8 text-2xl font-bold text-center font-heading text-foreground">
+            <i className="mr-3 fas fa-lightbulb text-accent"></i>
             Consejos para Mejores Evaluaciones
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="medical-card text-center">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <Card className="text-center medical-card">
               <CardContent className="p-6">
-                <i className="fas fa-clipboard-check text-primary text-3xl mb-4"></i>
-                <h3 className="font-heading font-semibold text-foreground mb-3">
+                <i className="mb-4 text-3xl fas fa-clipboard-check text-primary"></i>
+                <h3 className="mb-3 font-semibold font-heading text-foreground">
                   Documentación Detallada
                 </h3>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-sm text-muted-foreground">
                   Incluye todos los datos relevantes del paciente y síntomas observados
                 </p>
               </CardContent>
             </Card>
-            <Card className="medical-card text-center">
+            <Card className="text-center medical-card">
               <CardContent className="p-6">
-                <i className="fas fa-search text-accent text-3xl mb-4"></i>
-                <h3 className="font-heading font-semibold text-foreground mb-3">
+                <i className="mb-4 text-3xl fas fa-search text-accent"></i>
+                <h3 className="mb-3 font-semibold font-heading text-foreground">
                   Análisis Profundo
                 </h3>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-sm text-muted-foreground">
                   Justifica tu diagnóstico con base en evidencia clínica y síntomas
                 </p>
               </CardContent>
             </Card>
-            <Card className="medical-card text-center">
+            <Card className="text-center medical-card">
               <CardContent className="p-6">
-                <i className="fas fa-pills text-secondary text-3xl mb-4"></i>
-                <h3 className="font-heading font-semibold text-foreground mb-3">
+                <i className="mb-4 text-3xl fas fa-pills text-secondary"></i>
+                <h3 className="mb-3 font-semibold font-heading text-foreground">
                   Tratamiento Integral
                 </h3>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-sm text-muted-foreground">
                   Propone un plan de tratamiento completo y realista
                 </p>
               </CardContent>

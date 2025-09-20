@@ -122,7 +122,7 @@ const DropdownMenu = ({ children, isOpen, onClose }) => {
   );
 };
 
-// Componente DropdownMenuTrigger
+// Componente DropdownMenuTrigger - CORREGIDO: No usar button dentro de button
 const DropdownMenuTrigger = ({ asChild = false, children, onClick, ...props }) => {
   if (asChild) {
     return React.cloneElement(React.Children.only(children), {
@@ -133,9 +133,9 @@ const DropdownMenuTrigger = ({ asChild = false, children, onClick, ...props }) =
   }
   
   return (
-    <button className="cursor-pointer" onClick={onClick} {...props}>
+    <div className="cursor-pointer" onClick={onClick} {...props}>
       {children}
-    </button>
+    </div>
   );
 };
 
@@ -172,6 +172,12 @@ const Header = ({
 
   const isActive = (path) => location.pathname === path;
 
+  // Función para determinar la ruta del dashboard según el tipo de usuario
+  const getDashboardPath = () => {
+    if (!isAuthenticated) return "/";
+    return userType === 'student' ? "/student/dashboard" : "/doctor/dashboard";
+  };
+
   const publicNavItems = [
     { path: "/", label: "Inicio" },
     { path: "/about", label: "Acerca de" },
@@ -190,9 +196,9 @@ const Header = ({
     React.createElement('header', { className: 'medical-nav sticky top-0 z-50 bg-white border-b shadow-sm' },
       React.createElement('div', { className: 'container mx-auto px-4 py-4' },
         React.createElement('div', { className: 'flex items-center justify-between' },
-          // Logo
+          // Logo - ACTUALIZADO: Redirige al dashboard correspondiente
           React.createElement(Link, { 
-            to: "/", 
+            to: getDashboardPath(), 
             className: "flex items-center space-x-3" 
           },
             React.createElement('div', { 
@@ -248,16 +254,7 @@ const Header = ({
                       React.createElement('i', { className: "fas fa-user-plus mr-2" }),
                       "Registrar usuario"
                     )
-                  ),
-                  React.createElement(Button, { 
-                    variant: "outline",
-                    asChild: true 
-                  },
-                    React.createElement(Link, { to: "/admin/dashboard" },
-                      React.createElement('i', { className: "fas fa-tachometer-alt mr-2" }),
-                      "Panel de Control"
-                    )
-                  )
+                  ),                 
                 ),
                 
                 // Notifications
@@ -276,13 +273,15 @@ const Header = ({
                   )
                 ),
 
-                // User Menu Dropdown
+                // User Menu Dropdown - CORREGIDO: No anidar botones
                 React.createElement('div', { className: "relative" },
                   React.createElement(DropdownMenuTrigger, { onClick: toggleDropdown },
-                    React.createElement(Button, { variant: "outline" },
-                      React.createElement('i', { className: "fas fa-user mr-2" }),
-                      userName,
-                      React.createElement('i', { className: "fas fa-chevron-down ml-2" })
+                    React.createElement('div', { className: "cursor-pointer" },
+                      React.createElement(Button, { variant: "outline" },
+                        React.createElement('i', { className: "fas fa-user mr-2" }),
+                        userName,
+                        React.createElement('i', { className: "fas fa-chevron-down ml-2" })
+                      )
                     )
                   ),
                   React.createElement(DropdownMenu, { isOpen: isDropdownOpen, onClose: closeDropdown },
@@ -376,8 +375,6 @@ const Header = ({
                   className: "flex items-center text-gray-700 hover:text-blue-600",
                   onClick: () => setIsMenuOpen(false)
                 },
-                  React.createElement('i', { className: "fas fa-tachometer-alt mr-2" }),
-                  "Panel de Control"
                 )
               ),
               userType !== 'admin' && React.createElement(Link, {

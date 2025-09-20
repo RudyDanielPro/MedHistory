@@ -1,7 +1,7 @@
-import { useState, cloneElement, Children } from "react";
-import { Header } from "../Components/Header";
-import { Footer } from "../Components/Footer";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Footer } from "../Components/Footer";
+import { Header } from "../Components/Header";
 
 export function StudentProfile () {
   const navigate = useNavigate();
@@ -17,123 +17,163 @@ export function StudentProfile () {
     email: "juan.perez@estudiante.com",
     university: "Universidad de Ciencias Médicas",
     year: "4to año",
-    phone: "+53 5555-1234"
+    phone: "+53 5555-1234",
+    avatar: ""
   });
 
   // Componente Button
   const Button = ({ 
+    variant = "default", 
+    size = "default", 
+    className = "", 
     children, 
-    size = 'md', 
-    variant = 'default', 
-    className = '', 
-    asChild = false, 
+    onClick,
+    type = "button",
+    disabled = false,
     ...props 
   }) => {
-    const sizeClasses = {
-      sm: 'px-3 py-1.5 text-sm',
-      md: 'px-4 py-2',
-      lg: 'px-6 py-3 text-lg'
-    };
-    
+    const baseClasses = "btn";
     const variantClasses = {
-      default: 'bg-primary text-white hover:bg-primary/90',
-      outline: 'border border-primary text-primary bg-transparent hover:bg-primary/10',
-      destructive: 'bg-destructive text-white hover:bg-destructive/90'
+      default: "btn-default",
+      outline: "btn-outline",
+      destructive: "btn-destructive",
+      secondary: "btn-secondary"
+    };
+    const sizeClasses = {
+      default: "",
+      sm: "btn-sm",
+      lg: "btn-lg",
+      icon: "btn-icon"
     };
     
-    const classes = `rounded-md font-medium transition-colors ${sizeClasses[size]} ${variantClasses[variant]} ${className}`;
-    
-    if (asChild) {
-      return cloneElement(Children.only(children), {
-        className: `${children.props.className || ''} ${classes}`,
-        ...props
-      });
-    }
+    const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
     
     return (
-      <button className={classes} {...props}>
+      <button 
+        className={classes} 
+        onClick={onClick} 
+        type={type}
+        disabled={disabled}
+        {...props}
+      >
         {children}
-      </button>
+    </button>
     );
   };
 
   // Componente Input
-  const Input = ({ 
-    id, 
-    value, 
-    className = '', 
-    type = 'text',
-    onChange,
-    ...props 
-  }) => {
-    const classes = `flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`;
-    
+  const Input = ({ id, value, onChange, type = "text", placeholder = "", className = "" }) => {
     return (
       <input
         id={id}
         type={type}
         value={value}
         onChange={onChange}
-        className={classes}
-        {...props}
+        placeholder={placeholder}
+        className={`input ${className}`}
       />
     );
   };
 
   // Componente Label
-  const Label = ({ 
-    htmlFor, 
-    children, 
-    className = '' 
-  }) => {
-    const classes = `text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${className}`;
-    
+  const Label = ({ htmlFor, children, className = "" }) => {
     return (
-      <label htmlFor={htmlFor} className={classes}>
+      <label htmlFor={htmlFor} className={`label ${className}`}>
         {children}
       </label>
     );
   };
 
   // Componente Card
-  const Card = ({ children, className = '' }) => {
+  const Card = ({ className = "", children }) => {
     return (
-      <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}>
+      <div className={`card ${className}`}>
         {children}
       </div>
     );
   };
 
   // Componente CardHeader
-  const CardHeader = ({ children, className = '' }) => {
+  const CardHeader = ({ className = "", children }) => {
     return (
-      <div className={`flex flex-col space-y-1.5 p-6 ${className}`}>
+      <div className={`card-header ${className}`}>
         {children}
       </div>
     );
   };
 
   // Componente CardTitle
-  const CardTitle = ({ children, className = '' }) => {
+  const CardTitle = ({ className = "", children }) => {
     return (
-      <h3 className={`text-2xl font-semibold leading-none tracking-tight ${className}`}>
+      <h3 className={`card-title ${className}`}>
         {children}
       </h3>
     );
   };
 
   // Componente CardContent
-  const CardContent = ({ children, className = '' }) => {
+  const CardContent = ({ className = "", children }) => {
     return (
-      <div className={`p-6 pt-0 ${className}`}>
+      <div className={`card-content ${className}`}>
         {children}
       </div>
     );
   };
 
+  // Componente Avatar
+  const Avatar = ({ className = "", children }) => {
+    return (
+      <div className={`avatar ${className}`}>
+        {children}
+      </div>
+    );
+  };
+
+  // Componente AvatarImage
+  const AvatarImage = ({ src, alt, className = "" }) => {
+    return (
+      <img 
+        src={src} 
+        alt={alt} 
+        className={`avatar-image ${className}`}
+      />
+    );
+  };
+
+  // Componente AvatarFallback
+  const AvatarFallback = ({ className = "", children }) => {
+    return (
+      <div className={`avatar-fallback ${className}`}>
+        {children}
+      </div>
+    );
+  };
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProfileData(prev => ({
+          ...prev,
+          avatar: e.target?.result
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Función para manejar cambios en los inputs
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
+    setProfileData(prev => ({
+      ...prev,
+      [id]: value
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      
       <Header 
         isAuthenticated={true}
         userType="student"
@@ -164,12 +204,44 @@ export function StudentProfile () {
                   Información del Estudiante
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
+                {/* Profile Photo Section */}
+                <div className="flex flex-col items-center space-y-4">
+                  <Avatar className="w-32 h-32 border-4 border-primary/20">
+                    {profileData.avatar ? (
+                      <AvatarImage src={profileData.avatar} alt="Foto de perfil" />
+                    ) : (
+                      <AvatarFallback className="text-2xl bg-primary/10 text-primary">
+                        {profileData.name.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div className="text-center">
+                    <Label htmlFor="avatar-upload" className="cursor-pointer">
+                      <Button variant="outline" size="sm" type="button" className="medical-button">
+                        <i className="mr-2 fas fa-camera"></i>
+                        Cambiar foto
+                      </Button>
+                    </Label>
+                    <Input
+                      id="avatar-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                    />
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Formatos: JPG, PNG. Máximo 5MB
+                    </p>
+                  </div>
+                </div>
+                
                 <div>
                   <Label htmlFor="name">Nombre completo</Label>
                   <Input
                     id="name"
                     value={profileData.name}
+                    onChange={handleInputChange}
                     className="medical-input"
                   />
                 </div>
@@ -178,6 +250,7 @@ export function StudentProfile () {
                   <Input
                     id="email"
                     value={profileData.email}
+                    onChange={handleInputChange}
                     className="medical-input"
                   />
                 </div>
@@ -186,6 +259,7 @@ export function StudentProfile () {
                   <Input
                     id="university"
                     value={profileData.university}
+                    onChange={handleInputChange}
                     className="medical-input"
                   />
                 </div>
@@ -194,6 +268,7 @@ export function StudentProfile () {
                   <Input
                     id="year"
                     value={profileData.year}
+                    onChange={handleInputChange}
                     className="medical-input"
                   />
                 </div>
@@ -202,6 +277,7 @@ export function StudentProfile () {
                   <Input
                     id="phone"
                     value={profileData.phone}
+                    onChange={handleInputChange}
                     className="medical-input"
                   />
                 </div>
@@ -215,9 +291,8 @@ export function StudentProfile () {
         </div>
       </section>
 
-      <Footer 
-      isAuthenticated={true}
-      isStudent = {true} />
+      <Footer isAuthenticated={true} />
     </div>
   );
 };
+

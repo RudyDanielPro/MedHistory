@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
+import { Footer } from "../Components/Footer";
+import { Header } from "../Components/Header";
 
 const DoctorNotifications = () => {
   const navigate = useNavigate();
@@ -14,67 +14,72 @@ const DoctorNotifications = () => {
 
   // Componente Button
   const Button = ({ 
-    variant = "default", 
-    size = "default", 
-    className = "", 
     children, 
-    onClick,
+    size = 'md', 
+    variant = 'default', 
+    className = '', 
+    asChild = false, 
     ...props 
   }) => {
-    const baseClasses = "btn";
-    const variantClasses = {
-      default: "btn-default",
-      outline: "btn-outline",
-      destructive: "btn-destructive",
-      secondary: "btn-secondary"
-    };
     const sizeClasses = {
-      default: "",
-      sm: "btn-sm",
-      lg: "btn-lg",
-      icon: "btn-icon"
+      sm: 'px-3 py-1.5 text-sm',
+      md: 'px-4 py-2',
+      lg: 'px-6 py-3 text-lg'
     };
     
-    const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+    const variantClasses = {
+      default: 'bg-primary text-white hover:bg-primary/90',
+      outline: 'border border-primary text-primary bg-transparent hover:bg-primary/10',
+      destructive: 'bg-destructive text-white hover:bg-destructive/90'
+    };
+    
+    const classes = `rounded-md font-medium transition-colors ${sizeClasses[size]} ${variantClasses[variant]} ${className}`;
+    
+    if (asChild) {
+      return React.cloneElement(React.Children.only(children), {
+        className: `${children.props.className || ''} ${classes}`,
+        ...props
+      });
+    }
     
     return (
-      <button className={classes} onClick={onClick} {...props}>
+      <button className={classes} {...props}>
         {children}
       </button>
     );
   };
 
   // Componente Card
-  const Card = ({ className = "", children }) => {
+  const Card = ({ children, className = '' }) => {
     return (
-      <div className={`card ${className}`}>
+      <div className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}>
         {children}
       </div>
     );
   };
 
   // Componente CardHeader
-  const CardHeader = ({ className = "", children }) => {
+  const CardHeader = ({ children, className = '' }) => {
     return (
-      <div className={`card-header ${className}`}>
+      <div className={`flex flex-col space-y-1.5 p-6 ${className}`}>
         {children}
       </div>
     );
   };
 
   // Componente CardTitle
-  const CardTitle = ({ className = "", children }) => {
+  const CardTitle = ({ children, className = '' }) => {
     return (
-      <h3 className={`card-title ${className}`}>
+      <h3 className={`text-2xl font-semibold leading-none tracking-tight ${className}`}>
         {children}
       </h3>
     );
   };
 
   // Componente CardContent
-  const CardContent = ({ className = "", children }) => {
+  const CardContent = ({ children, className = '' }) => {
     return (
-      <div className={`card-content ${className}`}>
+      <div className={`p-6 pt-0 ${className}`}>
         {children}
       </div>
     );
@@ -82,21 +87,18 @@ const DoctorNotifications = () => {
 
   // Componente Badge
   const Badge = ({ 
-    variant = "default", 
-    children 
+    children, 
+    variant = 'default', 
+    className = '' 
   }) => {
-    const baseClasses = "badge";
     const variantClasses = {
-      default: "badge-default",
-      destructive: "badge-destructive",
-      secondary: "badge-secondary",
-      outline: "badge-outline"
+      default: 'bg-primary text-primary-foreground',
+      secondary: 'bg-secondary text-secondary-foreground',
+      destructive: 'bg-destructive text-destructive-foreground'
     };
     
-    const classes = `${baseClasses} ${variantClasses[variant]}`;
-    
     return (
-      <span className={classes}>
+      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${variantClasses[variant]} ${className}`}>
         {children}
       </span>
     );
@@ -174,7 +176,7 @@ const DoctorNotifications = () => {
                       {new Date(notification.date).toLocaleDateString('es-ES')}
                     </span>
                     <Button 
-                      className="medical-button" 
+                      variant="outline" 
                       size="sm"
                       onClick={() => navigate(`/doctor/evaluation/${notification.id}`)}
                     >

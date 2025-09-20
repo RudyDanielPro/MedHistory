@@ -201,16 +201,16 @@ export function DoctorDashboard () {
 
       {/* Welcome Section */}
       <section className="py-12 hero-section">
-        <div className="container mx-auto px-4">
+        <div className="container px-4 mx-auto">
           <div className="text-center text-white">
-            <h1 className="text-4xl md:text-5xl font-heading font-bold mb-4">
-              <i className="fas fa-user-md mr-3"></i>
+            <h1 className="mb-4 text-4xl font-bold md:text-5xl font-heading">
+              <i className="mr-3 fas fa-user-md"></i>
               Dashboard Doctor
             </h1>
             <p className="text-xl text-white/90">
               Bienvenido de vuelta, <strong>{userName}</strong>
             </p>
-            <p className="text-lg text-white/80 mt-2">
+            <p className="mt-2 text-lg text-white/80">
               Evalúa consultas médicas y guía a futuros profesionales
             </p>
           </div>
@@ -219,11 +219,11 @@ export function DoctorDashboard () {
 
       {/* Quick Actions */}
       <section className="py-8 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="container px-4 mx-auto">
+          <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Button size="lg" className="medical-button" asChild>
               <Link to="/doctor/notifications">
-                <i className="fas fa-file-medical mr-2"></i>
+                <i className="mr-2 fas fa-file-medical"></i>
                 Evaluar Consultas
                 {notificationCount > 0 && (
                   <Badge variant="destructive" className="ml-2">
@@ -231,31 +231,25 @@ export function DoctorDashboard () {
                   </Badge>
                 )}
               </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link to="/doctor/reports">
-                <i className="fas fa-chart-bar mr-2"></i>
-                Ver Reportes
-              </Link>
-            </Button>
+            </Button>            
           </div>
         </div>
       </section>
 
       {/* Stats Cards */}
       <section className="py-8 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-heading font-bold text-foreground mb-6 text-center">
+        <div className="container px-4 mx-auto">
+          <h2 className="mb-6 text-2xl font-bold text-center font-heading text-foreground">
             Resumen de Actividad
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             {quickStats.map((stat, index) => (
-              <Card key={index} className="medical-card text-center">
+              <Card key={index} className="text-center medical-card">
                 <CardContent className="p-6">
                   <div className={`w-16 h-16 ${stat.color} rounded-full flex items-center justify-center mx-auto mb-4`}>
                     <i className={`${stat.icon} text-white text-2xl`}></i>
                   </div>
-                  <div className="text-3xl font-bold text-foreground mb-2">
+                  <div className="mb-2 text-3xl font-bold text-foreground">
                     {stat.value}
                   </div>
                   <div className="text-muted-foreground">
@@ -270,16 +264,16 @@ export function DoctorDashboard () {
 
       {/* Pending Consultations */}
       <section className="py-12 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-heading font-bold text-foreground">
-              <i className="fas fa-hourglass-half mr-3 text-secondary"></i>
+        <div className="container px-4 mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-3xl font-bold font-heading text-foreground">
+              <i className="mr-3 fas fa-hourglass-half text-secondary"></i>
               Consultas Pendientes de Evaluación
             </h2>
             <Button variant="outline" asChild>
               <Link to="/doctor/notifications">
                 Ver todas
-                <i className="fas fa-arrow-right ml-2"></i>
+                <i className="ml-2 fas fa-arrow-right"></i>
               </Link>
             </Button>
           </div>
@@ -288,57 +282,57 @@ export function DoctorDashboard () {
             {pendingConsultations.map((consultation) => (
               <Card key={consultation.id} className="medical-card">
                 <CardHeader>
-                  <div className="flex justify-between items-start">
+                  <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-xl text-foreground">
-                        <i className="fas fa-graduation-cap mr-2 text-primary"></i>
+                        <i className="mr-2 fas fa-graduation-cap text-primary"></i>
                         Estudiante: {consultation.studentName}
                       </CardTitle>
-                      <p className="text-muted-foreground mt-1">
-                        <i className="fas fa-user mr-2"></i>
+                      <p className="mt-1 text-muted-foreground">
+                        <i className="mr-2 fas fa-user"></i>
                         Paciente: {consultation.patientName}
                       </p>
                       <p className="text-muted-foreground">
-                        <i className="fas fa-calendar mr-2"></i>
+                        <i className="mr-2 fas fa-calendar"></i>
                         Enviada: {new Date(consultation.submittedDate).toLocaleDateString('es-ES')}
                       </p>
                     </div>
                     <Badge 
                       className={`${getPriorityColor(consultation.priority)} text-white`}
                     >
-                      <i className="fas fa-exclamation-triangle mr-1"></i>
+                      <i className="mr-1 fas fa-exclamation-triangle"></i>
                       Prioridad {consultation.priority}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                  <div className="grid grid-cols-1 gap-4 mb-4 lg:grid-cols-2">
                     <div>
-                      <p className="text-sm font-semibold text-foreground mb-2">
-                        <i className="fas fa-stethoscope mr-1"></i>
+                      <p className="mb-2 text-sm font-semibold text-foreground">
+                        <i className="mr-1 fas fa-stethoscope"></i>
                         Síntomas Reportados:
                       </p>
-                      <p className="text-muted-foreground text-sm bg-muted/30 p-3 rounded">
+                      <p className="p-3 text-sm rounded text-muted-foreground bg-muted/30">
                         {consultation.symptoms}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground mb-2">
-                        <i className="fas fa-diagnoses mr-1"></i>
+                      <p className="mb-2 text-sm font-semibold text-foreground">
+                        <i className="mr-1 fas fa-diagnoses"></i>
                         Diagnóstico del Estudiante:
                       </p>
-                      <p className="text-muted-foreground text-sm bg-accent/10 p-3 rounded">
+                      <p className="p-3 text-sm rounded text-muted-foreground bg-accent/10">
                         {consultation.diagnosis}
                       </p>
                     </div>
                   </div>
                   <div className="flex justify-end space-x-2">
                     <Button variant="outline" size="sm">
-                      <i className="fas fa-eye mr-2"></i>
+                      <i className="mr-2 fas fa-eye"></i>
                       Ver completa
                     </Button>
                     <Button className="medical-button" size="sm">
-                      <i className="fas fa-clipboard-check mr-2"></i>
+                      <i className="mr-2 fas fa-clipboard-check"></i>
                       Evaluar ahora
                     </Button>
                   </div>
@@ -351,9 +345,9 @@ export function DoctorDashboard () {
 
       {/* Recent Evaluations */}
       <section className="py-12 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-heading font-bold text-foreground mb-8">
-            <i className="fas fa-check-circle mr-3 text-accent"></i>
+        <div className="container px-4 mx-auto">
+          <h2 className="mb-8 text-3xl font-bold font-heading text-foreground">
+            <i className="mr-3 fas fa-check-circle text-accent"></i>
             Evaluaciones Recientes
           </h2>
 
@@ -361,14 +355,14 @@ export function DoctorDashboard () {
             {recentEvaluations.map((evaluation) => (
               <Card key={evaluation.id} className="medical-card">
                 <CardHeader>
-                  <div className="flex justify-between items-start">
+                  <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-xl text-foreground">
-                        <i className="fas fa-graduation-cap mr-2 text-primary"></i>
+                        <i className="mr-2 fas fa-graduation-cap text-primary"></i>
                         Estudiante: {evaluation.studentName}
                       </CardTitle>
-                      <p className="text-muted-foreground mt-1">
-                        <i className="fas fa-user mr-2"></i>
+                      <p className="mt-1 text-muted-foreground">
+                        <i className="mr-2 fas fa-user"></i>
                         Paciente: {evaluation.patientName}
                       </p>
                     </div>
@@ -379,7 +373,7 @@ export function DoctorDashboard () {
                         </span>
                         <span className="text-muted-foreground">/5.0</span>
                       </div>
-                      <div className="flex text-accent mt-1">
+                      <div className="flex mt-1 text-accent">
                         {[...Array(5)].map((_, i) => (
                           <i 
                             key={i} 
@@ -392,21 +386,21 @@ export function DoctorDashboard () {
                 </CardHeader>
                 <CardContent>
                   <div className="mb-4">
-                    <p className="text-sm font-semibold text-foreground mb-2">
-                      <i className="fas fa-comment mr-1"></i>
+                    <p className="mb-2 text-sm font-semibold text-foreground">
+                      <i className="mr-1 fas fa-comment"></i>
                       Retroalimentación:
                     </p>
-                    <p className="text-muted-foreground text-sm bg-accent/5 p-3 rounded border border-accent/20">
+                    <p className="p-3 text-sm border rounded text-muted-foreground bg-accent/5 border-accent/20">
                       {evaluation.feedback}
                     </p>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex items-center justify-between">
                     <p className="text-sm text-muted-foreground">
-                      <i className="fas fa-calendar mr-1"></i>
+                      <i className="mr-1 fas fa-calendar"></i>
                       Evaluada: {new Date(evaluation.evaluatedDate).toLocaleDateString('es-ES')}
                     </p>
                     <Button variant="outline" size="sm">
-                      <i className="fas fa-eye mr-2"></i>
+                      <i className="mr-2 fas fa-eye"></i>
                       Ver detalles
                     </Button>
                   </div>
@@ -419,41 +413,41 @@ export function DoctorDashboard () {
 
       {/* Evaluation Guidelines */}
       <section className="py-12 bg-background">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-heading font-bold text-foreground mb-8 text-center">
-            <i className="fas fa-clipboard-list mr-3 text-primary"></i>
+        <div className="container px-4 mx-auto">
+          <h2 className="mb-8 text-2xl font-bold text-center font-heading text-foreground">
+            <i className="mr-3 fas fa-clipboard-list text-primary"></i>
             Criterios de Evaluación
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="medical-card text-center">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <Card className="text-center medical-card">
               <CardContent className="p-6 pt-8">
-                <i className="fas fa-search-plus text-primary text-3xl mb-4"></i>
-                <h3 className="font-heading font-semibold text-foreground mb-3">
+                <i className="mb-4 text-3xl fas fa-search-plus text-primary"></i>
+                <h3 className="mb-3 font-semibold font-heading text-foreground">
                   Análisis Clínico
                 </h3>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-sm text-muted-foreground">
                   Evaluación de la interpretación de síntomas y análisis diferencial
                 </p>
               </CardContent>
             </Card>
-            <Card className="medical-card text-center">
+            <Card className="text-center medical-card">
               <CardContent className="p-6">
-                <i className="fas fa-diagnoses text-accent text-3xl mb-4"></i>
-                <h3 className="font-heading font-semibold text-foreground mb-3">
+                <i className="mb-4 text-3xl fas fa-diagnoses text-accent"></i>
+                <h3 className="mb-3 font-semibold font-heading text-foreground">
                   Precisión Diagnóstica
                 </h3>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-sm text-muted-foreground">
                   Correctitud del diagnóstico y justificación médica apropiada
                 </p>
               </CardContent>
             </Card>
-            <Card className="medical-card text-center">
+            <Card className="text-center medical-card">
               <CardContent className="p-6">
-                <i className="fas fa-prescription-bottle-alt text-secondary text-3xl mb-4"></i>
-                <h3 className="font-heading font-semibold text-foreground mb-3">
+                <i className="mb-4 text-3xl fas fa-prescription-bottle-alt text-secondary"></i>
+                <h3 className="mb-3 font-semibold font-heading text-foreground">
                   Plan de Tratamiento
                 </h3>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-sm text-muted-foreground">
                   Adecuación y viabilidad del plan terapéutico propuesto
                 </p>
               </CardContent>
