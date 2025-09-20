@@ -1,5 +1,7 @@
 import { Footer } from "../Components/Footer";
 import { Header } from "../Components/Header";
+import alian from "../assets/alian.jpg"
+import rudy from "../assets/Rudy.jpg"
 
 const FeatureCard = ({ icon, title, description }) => {
   return (
@@ -25,13 +27,13 @@ export const About = () => {
       name: "Alián Torres Méndez",
       role: "Desarrollador Frontend",
       description: "Estudiante de tercer año de la UCI, especializado en desarrollo de soluciones médicas digitales.",
-      photo: "src/images/alian.jpg" // Ruta a la foto de Alían
+      photo: alian 
     },
     {
       name: "Rudy Daniel Carballo Miranda",
       role: "Desarrollador Frontend",
       description: "Estudiante de tercer año de la UCI, experto en interfaces de usuario y experiencia médica.",
-      icon: "fas fa-code"
+      photo: rudy
     }
   ];
 
