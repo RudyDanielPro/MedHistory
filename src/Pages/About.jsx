@@ -25,7 +25,7 @@ export const About = () => {
       name: "Alián Torres Méndez",
       role: "Desarrollador Frontend",
       description: "Estudiante de tercer año de la UCI, especializado en desarrollo de soluciones médicas digitales.",
-      icon: "fas fa-crown"
+      photo: "src/images/alian.jpg" // Ruta a la foto de Alían
     },
     {
       name: "Rudy Daniel Carballo Miranda",
@@ -160,7 +160,18 @@ export const About = () => {
             {teamMembers.map((member, index) => (
               <div key={index} className="p-8 text-center medical-card">
                 <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary to-accent">
-                  <i className={`${member.icon} text-white text-3xl`}></i>
+                  <img 
+                    src={member.photo} 
+                    alt={member.name}
+                    className="object-cover w-full h-full rounded-full"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div className="items-center justify-center hidden w-full h-full text-white text-3xl">
+                    <i className="fas fa-user"></i>
+                  </div>
                 </div>
                 <h3 className="mb-2 text-2xl font-bold font-heading text-foreground">
                   {member.name}
