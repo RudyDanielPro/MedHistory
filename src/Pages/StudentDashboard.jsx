@@ -310,7 +310,7 @@ export function StudentDashboard () {
             Consejos para Mejores Evaluaciones
           </h2>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <Card className="text-center medical-card">
+            <Card className="text-center transition-transform duration-300 medical-card hover:scale-105">
               <CardContent className="p-6">
                 <i className="mb-4 text-3xl fas fa-clipboard-check text-primary"></i>
                 <h3 className="mb-3 font-semibold font-heading text-foreground">
@@ -321,7 +321,7 @@ export function StudentDashboard () {
                 </p>
               </CardContent>
             </Card>
-            <Card className="text-center medical-card">
+            <Card className="text-center transition-transform duration-300 medical-card hover:scale-105">
               <CardContent className="p-6">
                 <i className="mb-4 text-3xl fas fa-search text-accent"></i>
                 <h3 className="mb-3 font-semibold font-heading text-foreground">
@@ -332,7 +332,7 @@ export function StudentDashboard () {
                 </p>
               </CardContent>
             </Card>
-            <Card className="text-center medical-card">
+            <Card className="text-center transition-transform duration-300 medical-card hover:scale-105">
               <CardContent className="p-6">
                 <i className="mb-4 text-3xl fas fa-pills text-secondary"></i>
                 <h3 className="mb-3 font-semibold font-heading text-foreground">

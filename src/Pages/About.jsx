@@ -3,7 +3,7 @@ import { Header } from "../Components/Header";
 
 const FeatureCard = ({ icon, title, description }) => {
   return (
-    <div className="h-full p-6 medical-card">
+    <div className="h-full p-6 transition-transform duration-300 medical-card hover:scale-105">
       <div className="text-center">
         <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-accent">
           <i className={`${icon} text-white text-2xl`}></i>
@@ -23,13 +23,13 @@ export const About = () => {
   const teamMembers = [
     {
       name: "Alián Torres Méndez",
-      role: "Líder del Proyecto",
+      role: "Desarrollador Frontend",
       description: "Estudiante de tercer año de la UCI, especializado en desarrollo de soluciones médicas digitales.",
       icon: "fas fa-crown"
     },
     {
       name: "Rudy Daniel Carballo Miranda",
-      role: "Jefe de Desarrollo Frontend",
+      role: "Desarrollador Frontend",
       description: "Estudiante de tercer año de la UCI, experto en interfaces de usuario y experiencia médica.",
       icon: "fas fa-code"
     }
