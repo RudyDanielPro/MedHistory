@@ -149,7 +149,7 @@ export const Header = ({
           {/* Mobile Menu Button */}
           <button
             ref={buttonRef}
-            className="flex items-center justify-center w-10 h-10 text-white transition-colors rounded-md md:hidden hover:bg-green-700"
+            className="flex items-center justify-center w-10 h-10 text-white transition-colors rounded-md md:hidden bg-gradient-to-r from-green-600 to-green-800"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Abrir menú"
           >
