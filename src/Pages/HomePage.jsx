@@ -7,7 +7,7 @@ import studentsImage from "../assets/students-consultation.jpg";
 import teamImage from "../assets/medical-team.jpg";
 import techImage from "../assets/medical-tech.jpg";
 
-// Componente MedicalCarousel implementado localmente
+
 const MedicalCarousel = ({ items }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -32,22 +32,22 @@ const MedicalCarousel = ({ items }) => {
   }, []);
 
   return (
-    <div className="relative overflow-hidden rounded-xl shadow-xl">
+    <div className="relative overflow-hidden shadow-xl rounded-xl">
       <div 
         className="flex transition-transform duration-500 ease-in-out"
         style={{ transform: `translateX(-${currentIndex * 100}%)` }}
       >
         {items.map((item) => (
-          <div key={item.id} className="w-full flex-shrink-0">
+          <div key={item.id} className="flex-shrink-0 w-full">
             <div className="relative h-96 md:h-[500px]">
               <img 
                 src={item.image} 
                 alt={item.title}
-                className="w-full h-full object-cover"
+                className="object-cover w-full h-full"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
+              <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/70 to-transparent">
                 <div className="p-8 text-white">
-                  <h3 className="text-2xl md:text-3xl font-bold mb-2">{item.title}</h3>
+                  <h3 className="mb-2 text-2xl font-bold md:text-3xl">{item.title}</h3>
                   <p className="text-lg opacity-90">{item.description}</p>
                 </div>
               </div>
@@ -58,19 +58,19 @@ const MedicalCarousel = ({ items }) => {
       
       <button 
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full backdrop-blur-sm transition-all"
+        className="absolute p-3 text-white transition-all transform -translate-y-1/2 rounded-full left-4 top-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm"
       >
         <i className="fas fa-chevron-left"></i>
       </button>
       
       <button 
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full backdrop-blur-sm transition-all"
+        className="absolute p-3 text-white transition-all transform -translate-y-1/2 rounded-full right-4 top-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm"
       >
         <i className="fas fa-chevron-right"></i>
       </button>
       
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+      <div className="absolute left-0 right-0 flex justify-center gap-2 bottom-4">
         {items.map((_, index) => (
           <button
             key={index}
@@ -88,19 +88,19 @@ const MedicalCarousel = ({ items }) => {
 // Componente FeatureCard implementado localmente
 const FeatureCard = ({ icon, title, description }) => {
   return (
-    <div className="medical-card p-6 text-center hover:scale-105 transition-transform duration-300">
+    <div className="p-6 text-center transition-transform duration-300 medical-card hover:scale-105">
       <div className="flex flex-col items-center text-center">
-        <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-accent">
           <i className={`${icon} text-2xl text-white`}></i>
         </div>
-        <h3 className="text-xl font-semibold mb-2">{title}</h3>
+        <h3 className="mb-2 text-xl font-semibold">{title}</h3>
         <p className="text-muted-foreground">{description}</p>
       </div>
     </div>
   );
 };
 
-// Componente Button implementado localmente
+
 const Button = forwardRef(({ 
   className, 
   variant = 'default', 
@@ -200,31 +200,31 @@ export function HomePage () {
       {/* Hero Section */}
       <section className="relative hero-section min-h-[600px] flex items-center">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="absolute inset-0 bg-center bg-no-repeat bg-cover"
           style={{ backgroundImage: `url(${heroImage})` }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-secondary/80"></div>
         </div>
         
-        <div className="relative container mx-auto px-4 py-20">
+        <div className="container relative px-4 py-20 mx-auto">
           <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-6xl font-heading font-bold text-white mb-6 leading-tight">
+            <h1 className="mb-6 text-4xl font-bold leading-tight text-white md:text-6xl font-heading">
               Evaluación Médica
               <span className="block text-accent">Profesional</span>
             </h1>
-            <p className="text-xl md:text-2xl text-white/90 mb-8 leading-relaxed">
+            <p className="mb-8 text-xl leading-relaxed md:text-2xl text-white/90">
               Plataforma especializada para facilitar la evaluación remota de estudiantes 
               de medicina por parte de doctores especializados.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row">
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="bg-white/10 border-white/30 text-white hover:bg-white/20 text-lg px-8 py-4"
+                className="px-8 py-4 text-lg text-white bg-white/10 border-white/30 hover:bg-white/20"
                 asChild
               >
                 <Link to="/about">
-                  <i className="fas fa-info-circle mr-2"></i>
+                  <i className="mr-2 fas fa-info-circle"></i>
                   Conocer Más
                 </Link>
               </Button>
@@ -235,18 +235,18 @@ export function HomePage () {
 
       {/* Features Section */}
       <section className="py-20 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-heading font-bold text-foreground mb-4">
+        <div className="container px-4 mx-auto">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl font-heading text-foreground">
               ¿Por qué elegir <span className="gradient-text">MedHistory</span>?
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <p className="max-w-3xl mx-auto text-xl text-muted-foreground">
               Una plataforma completa diseñada para revolucionar la educación médica 
               a través de la evaluación remota profesional.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, index) => (
               <FeatureCard 
                 key={index}
@@ -261,12 +261,12 @@ export function HomePage () {
 
       {/* Carousel Section */}
       <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-heading font-bold text-foreground mb-4">
+        <div className="container px-4 mx-auto">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl font-heading text-foreground">
               Experiencia <span className="gradient-text">Médica Digital</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="max-w-2xl mx-auto text-xl text-muted-foreground">
               Descubre cómo estudiantes y doctores utilizan nuestra plataforma para 
               una educación médica más efectiva.
             </p>
@@ -279,24 +279,24 @@ export function HomePage () {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary to-accent text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-heading font-bold mb-6">
+      <section className="py-20 text-white bg-gradient-to-r from-primary to-accent">
+        <div className="container px-4 mx-auto text-center">
+          <h2 className="mb-6 text-3xl font-bold md:text-4xl font-heading">
             ¿Listo para transformar la educación médica?
           </h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
+          <p className="max-w-2xl mx-auto mb-8 text-xl opacity-90">
             Únete a la comunidad de profesionales médicos que ya están utilizando 
             MedHistory para mejorar la formación de futuros doctores.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Button 
               size="lg" 
               variant="outline" 
-              className="border-white/30 text-white hover:bg-white/10 text-lg px-8 py-4"
+              className="px-8 py-4 text-lg text-white border-white/30 hover:bg-white/10"
               asChild>
                 
               <Link to="/contact">
-                <i className="fas fa-envelope mr-2"></i>
+                <i className="mr-2 fas fa-envelope"></i>
                 Contactar Equipo
               </Link>
             </Button>
