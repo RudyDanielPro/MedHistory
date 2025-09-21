@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 // Utilidad para combinar clases
@@ -162,15 +162,70 @@ const DropdownMenuItem = ({ asChild = false, children, onClick, ...props }) => {
 const Header = ({ 
   isAuthenticated = false, 
   userType, 
-  userName, 
+  userName: initialUserName, 
   notificationCount = 0,
-  onLogout 
+  onLogout,
+  token // Añadimos el token JWT para las peticiones
 }) => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [userName, setUserName] = useState(initialUserName || "Cargando...");
+  const [isLoading, setIsLoading] = useState(false);
 
   const isActive = (path) => location.pathname === path;
+
+  // Función para obtener el nombre del usuario autenticado
+  const fetchUserName = async () => {
+    if (!isAuthenticated || !token) return;
+    
+    setIsLoading(true);
+    try {
+      let endpoint = "";
+      
+      // Determinar el endpoint según el tipo de usuario
+      if (userType === 'student') {
+        endpoint = "/students"; // Ajusta según tu API
+      } else if (userType === 'doctor') {
+        endpoint = "/doctors"; // Ajusta según tu API
+      } else if (userType === 'admin') {
+        endpoint = "/admin"; // Ajusta según tu API
+      }
+      
+      if (!endpoint) {
+        setUserName("Usuario");
+        return;
+      }
+      
+      const response = await fetch(`http://rudy-backend-e2itqr-09d86f-31-97-130-237.traefik.me/${endpoint}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        // Ajusta según la estructura de respuesta de tu API
+        setUserName(userData.username || userData.email || "Usuario");
+      } else {
+        setUserName("Usuario");
+      }
+    } catch (error) {
+      console.error("Error al obtener nombre de usuario:", error);
+      setUserName("Usuario");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Efecto para cargar el nombre del usuario cuando se autentica
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchUserName();
+    }
+  }, [isAuthenticated, token, userType]);
 
   // Función para determinar la ruta del dashboard según el tipo de usuario
   const getDashboardPath = () => {
@@ -193,225 +248,233 @@ const Header = ({
   };
 
   return (
-    React.createElement('header', { className: 'medical-nav sticky top-0 z-50 bg-white border-b shadow-sm' },
-      React.createElement('div', { className: 'container mx-auto px-4 py-4' },
-        React.createElement('div', { className: 'flex items-center justify-between' },
-          // Logo - ACTUALIZADO: Redirige al dashboard correspondiente
-          React.createElement(Link, { 
-            to: getDashboardPath(), 
-            className: "flex items-center space-x-3" 
-          },
-            React.createElement('div', { 
-              className: "w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center" 
-            },
-              React.createElement('i', { className: "fas fa-user-md text-white text-lg" })
-            ),
-            React.createElement('span', { className: "text-2xl font-heading font-bold gradient-text" }, "MedHistory")
-          ),
+    <header className="sticky top-0 z-50 bg-white border-b shadow-sm medical-nav">
+      <div className="container px-4 py-4 mx-auto">
+        <div className="flex items-center justify-between">
+          {/* Logo - ACTUALIZADO: Redirige al dashboard correspondiente */}
+          <Link to={getDashboardPath()} className="flex items-center space-x-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent">
+              <i className="text-lg text-white fas fa-user-md"></i>
+            </div>
+            <span className="text-2xl font-bold font-heading gradient-text">MedHistory</span>
+          </Link>
 
-          // Desktop Navigation
-          React.createElement('nav', { className: 'hidden md:flex items-center space-x-8' },
-            !isAuthenticated ? (
-              React.createElement(React.Fragment, null,
-                publicNavItems.map((item) =>
-                  React.createElement(Link, {
-                    key: item.path,
-                    to: item.path,
-                    className: `font-medium transition-colors ${
+          {/* Desktop Navigation */}
+          <nav className="items-center hidden space-x-8 md:flex">
+            {!isAuthenticated ? (
+              <>
+                {publicNavItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`font-medium transition-colors ${
                       isActive(item.path)
                         ? "text-blue-600"
                         : "text-gray-700 hover:text-blue-600"
-                    }`
-                  }, item.label)
-                ),
-                React.createElement('div', { className: 'flex items-center space-x-4' },
-                  React.createElement(Button, { 
-                    asChild: true 
-                  },
-                    React.createElement(Link, { to: "/login" }, "Iniciar sesión")
-                  )
-                )
-              )
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <div className="flex items-center space-x-4">
+                  <Button asChild>
+                    <Link to="/login">Iniciar sesión</Link>
+                  </Button>
+                </div>
+              </>
             ) : (
-              React.createElement(React.Fragment, null,
-                // Authenticated Navigation
-                userType === 'student' && React.createElement(Button, { 
-                  variant: "outline",
-                  asChild: true 
-                },
-                  React.createElement(Link, { to: "/student/consultation" },
-                    React.createElement('i', { className: "fas fa-file-medical mr-2" }),
-                    "Realizar consulta"
-                  )
-                ),
+              <>
+                {/* Authenticated Navigation */}
+                {userType === 'student' && (
+                  <Button variant="outline" asChild>
+                    <Link to="/student/consultation">
+                      <i className="mr-2 fas fa-file-medical"></i>
+                      Realizar consulta
+                    </Link>
+                  </Button>
+                )}
                 
-                userType === 'admin' && React.createElement(React.Fragment, null,
-                  React.createElement(Button, { 
-                    variant: "outline",
-                    asChild: true 
-                  },
-                    React.createElement(Link, { to: "/admin/register" },
-                      React.createElement('i', { className: "fas fa-user-plus mr-2" }),
-                      "Registrar usuario"
-                    )
-                  ),                 
-                ),
+                {userType === 'admin' && (
+                  <>
+                    <Button variant="outline" asChild>
+                      <Link to="/admin/register">
+                        <i className="mr-2 fas fa-user-plus"></i>
+                        Registrar usuario
+                      </Link>
+                    </Button>
+                  </>
+                )}
                 
-                // Notifications
-                userType !== 'admin' && React.createElement(Button, { 
-                  variant: "outline", 
-                  size: "icon", 
-                  className: "relative",
-                  asChild: true 
-                },
-                  React.createElement(Link, { to: `/${userType}/notifications` },
-                    React.createElement('i', { className: "fas fa-bell" }),
-                    notificationCount > 0 && React.createElement(Badge, { 
-                      variant: "destructive", 
-                      className: "absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs" 
-                    }, notificationCount)
-                  )
-                ),
+                {/* Notifications */}
+                {userType !== 'admin' && (
+                  <Button variant="outline" size="icon" className="relative" asChild>
+                    <Link to={`/${userType}/notifications`}>
+                      <i className="fas fa-bell"></i>
+                      {notificationCount > 0 && (
+                        <Badge
+                          variant="destructive"
+                          className="absolute flex items-center justify-center w-5 h-5 p-0 text-xs -top-2 -right-2"
+                        >
+                          {notificationCount}
+                        </Badge>
+                      )}
+                    </Link>
+                  </Button>
+                )}
 
-                // User Menu Dropdown - CORREGIDO: No anidar botones
-                React.createElement('div', { className: "relative" },
-                  React.createElement(DropdownMenuTrigger, { onClick: toggleDropdown },
-                    React.createElement('div', { className: "cursor-pointer" },
-                      React.createElement(Button, { variant: "outline" },
-                        React.createElement('i', { className: "fas fa-user mr-2" }),
-                        userName,
-                        React.createElement('i', { className: "fas fa-chevron-down ml-2" })
-                      )
-                    )
-                  ),
-                  React.createElement(DropdownMenu, { isOpen: isDropdownOpen, onClose: closeDropdown },
-                    // Mostrar perfil solo para no administradores
-                    userType !== 'admin' && React.createElement(DropdownMenuItem, { asChild: true },
-                      React.createElement(Link, { 
-                        to: `/${userType}/profile`,
-                        onClick: closeDropdown
-                      },
-                        React.createElement('i', { className: "fas fa-user-cog mr-2" }),
-                        "Perfil"
-                      )
-                    ),
-                    // Opción de cerrar sesión para todos los usuarios autenticados
-                    React.createElement(DropdownMenuItem, { 
-                      onClick: () => {
+                {/* User Menu Dropdown - CORREGIDO: No anidar botones */}
+                <div className="relative">
+                  <DropdownMenuTrigger onClick={toggleDropdown}>
+                    <div className="cursor-pointer">
+                      <Button variant="outline">
+                        <i className="mr-2 fas fa-user"></i>
+                        {isLoading ? "Cargando..." : userName}
+                        <i className="ml-2 fas fa-chevron-down"></i>
+                      </Button>
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenu isOpen={isDropdownOpen} onClose={closeDropdown}>
+                    {/* Mostrar perfil solo para no administradores */}
+                    {userType !== 'admin' && (
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to={`/${userType}/profile`}
+                          onClick={closeDropdown}
+                        >
+                          <i className="mr-2 fas fa-user-cog"></i>
+                          Perfil
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    {/* Opción de cerrar sesión para todos los usuarios autenticados */}
+                    <DropdownMenuItem
+                      onClick={() => {
                         onLogout?.();
                         closeDropdown();
-                      }
-                    },
-                      React.createElement('i', { className: "fas fa-sign-out-alt mr-2" }),
-                      "Cerrar sesión"
-                    )
-                  )
-                )
-              )
-            )
-          ),
+                      }}
+                    >
+                      <i className="mr-2 fas fa-sign-out-alt"></i>
+                      Cerrar sesión
+                    </DropdownMenuItem>
+                  </DropdownMenu>
+                </div>
+              </>
+            )}
+          </nav>
 
-          // Mobile Menu Button
-          React.createElement(Button, {
-            variant: "outline",
-            size: "icon",
-            className: "md:hidden",
-            onClick: () => setIsMenuOpen(!isMenuOpen)
-          },
-            React.createElement('i', { className: `fas ${isMenuOpen ? 'fa-times' : 'fa-bars'}` })
-          )
-        ),
+          {/* Mobile Menu Button */}
+          <Button
+            variant="outline"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            <i className={`fas ${isMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
+          </Button>
+        </div>
 
-        // Mobile Navigation
-        isMenuOpen && React.createElement('div', { 
-          className: "md:hidden mt-4 pb-4 border-t border-gray-200 pt-4" 
-        },
-          !isAuthenticated ? (
-            React.createElement('div', { className: "flex flex-col space-y-4" },
-              publicNavItems.map((item) =>
-                React.createElement(Link, {
-                  key: item.path,
-                  to: item.path,
-                  className: `font-medium transition-colors ${
-                    isActive(item.path)
-                      ? "text-blue-600"
-                      : "text-gray-700 hover:text-blue-600"
-                  }`,
-                  onClick: () => setIsMenuOpen(false)
-                }, item.label)
-              ),
-              React.createElement('div', { className: "flex flex-col space-y-2" },
-                React.createElement(Button, { 
-                  asChild: true 
-                },
-                  React.createElement(Link, { 
-                    to: "/login", 
-                    onClick: () => setIsMenuOpen(false) 
-                  }, "Iniciar sesión")
-                )
-              )
-            )
-          ) : (
-            React.createElement('div', { className: "flex flex-col space-y-4" },
-              userType === 'student' && React.createElement(Link, {
-                to: "/student/consultation",
-                className: "flex items-center text-gray-700 hover:text-blue-600",
-                onClick: () => setIsMenuOpen(false)
-              },
-                React.createElement('i', { className: "fas fa-file-medical mr-2" }),
-                "Realizar consulta"
-              ),
-              userType === 'admin' && React.createElement(React.Fragment, null,
-                React.createElement(Link, {
-                  to: "/admin/register",
-                  className: "flex items-center text-gray-700 hover:text-blue-600",
-                  onClick: () => setIsMenuOpen(false)
-                },
-                  React.createElement('i', { className: "fas fa-user-plus mr-2" }),
-                  "Registrar usuario"
-                ),
-                React.createElement(Link, {
-                  to: "/admin/dashboard",
-                  className: "flex items-center text-gray-700 hover:text-blue-600",
-                  onClick: () => setIsMenuOpen(false)
-                },
-                )
-              ),
-              userType !== 'admin' && React.createElement(Link, {
-                to: `/${userType}/notifications`,
-                className: "flex items-center text-gray-700 hover:text-blue-600",
-                onClick: () => setIsMenuOpen(false)
-              },
-                React.createElement('i', { className: "fas fa-bell mr-2" }),
-                "Notificaciones",
-                notificationCount > 0 && React.createElement(Badge, { 
-                  variant: "destructive", 
-                  className: "ml-2" 
-                }, notificationCount)
-              ),
-              userType !== 'admin' && React.createElement(Link, {
-                to: `/${userType}/profile`,
-                className: "flex items-center text-gray-700 hover:text-blue-600",
-                onClick: () => setIsMenuOpen(false)
-              },
-                React.createElement('i', { className: "fas fa-user-cog mr-2" }),
-                "Perfil"
-              ),
-              React.createElement('button', {
-                onClick: () => {
-                  onLogout?.();
-                  setIsMenuOpen(false);
-                },
-                className: "flex items-center text-gray-700 hover:text-blue-600 text-left"
-              },
-                React.createElement('i', { className: "fas fa-sign-out-alt mr-2" }),
-                "Cerrar sesión"
-              )
-            )
-          )
-        )
-      )
-    )
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="pt-4 pb-4 mt-4 border-t border-gray-200 md:hidden">
+            {!isAuthenticated ? (
+              <div className="flex flex-col space-y-4">
+                {publicNavItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`font-medium transition-colors ${
+                      isActive(item.path)
+                        ? "text-blue-600"
+                        : "text-gray-700 hover:text-blue-600"
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                <div className="flex flex-col space-y-2">
+                  <Button asChild>
+                    <Link
+                      to="/login"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Iniciar sesión
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col space-y-4">
+                {userType === 'student' && (
+                  <Link
+                    to="/student/consultation"
+                    className="flex items-center text-gray-700 hover:text-blue-600"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <i className="mr-2 fas fa-file-medical"></i>
+                    Realizar consulta
+                  </Link>
+                )}
+                {userType === 'admin' && (
+                  <>
+                    <Link
+                      to="/admin/register"
+                      className="flex items-center text-gray-700 hover:text-blue-600"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <i className="mr-2 fas fa-user-plus"></i>
+                      Registrar usuario
+                    </Link>
+                    <Link
+                      to="/admin/dashboard"
+                      className="flex items-center text-gray-700 hover:text-blue-600"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                  </>
+                )}
+                {userType !== 'admin' && (
+                  <Link
+                    to={`/${userType}/notifications`}
+                    className="flex items-center text-gray-700 hover:text-blue-600"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <i className="mr-2 fas fa-bell"></i>
+                    Notificaciones
+                    {notificationCount > 0 && (
+                      <Badge variant="destructive" className="ml-2">
+                        {notificationCount}
+                      </Badge>
+                    )}
+                  </Link>
+                )}
+                {userType !== 'admin' && (
+                  <Link
+                    to={`/${userType}/profile`}
+                    className="flex items-center text-gray-700 hover:text-blue-600"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <i className="mr-2 fas fa-user-cog"></i>
+                    Perfil
+                  </Link>
+                )}
+                <button
+                  onClick={() => {
+                    onLogout?.();
+                    setIsMenuOpen(false);
+                  }}
+                  className="flex items-center text-left text-gray-700 hover:text-blue-600"
+                >
+                  <i className="mr-2 fas fa-sign-out-alt"></i>
+                  Cerrar sesión
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </header>
   );
 };
 
