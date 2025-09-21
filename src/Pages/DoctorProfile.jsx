@@ -3,93 +3,36 @@ import { Header } from "../Components/Header";
 import { Footer } from "../Components/Footer";
 import { useNavigate } from "react-router-dom";
 
-export function DoctorProfile () {
-  const navigate = useNavigate();
-  const [userName] = useState("Dr. Carlos Mendoza");
-  const [notificationCount] = useState(5);
-  const fileInputRef = useRef(null);
-  
-  // Estado para la foto de perfil - Cargar desde localStorage si existe
-  const [profileImage, setProfileImage] = useState(() => {
-    const savedImage = localStorage.getItem('doctorProfileImage');
-    return savedImage || null;
-  });
-
-  // Efecto para guardar la imagen cuando cambie
-  useEffect(() => {
-    if (profileImage) {
-      localStorage.setItem('doctorProfileImage', profileImage);
-    } else {
-      localStorage.removeItem('doctorProfileImage');
-    }
-  }, [profileImage]);
-
-  const handleLogout = () => {
-    navigate("/");
-  };
-
-  const [profileData, setProfileData] = useState({
-    name: "Dr. Carlos Mendoza",
-    email: "carlos.mendoza@doctor.com",
-    specialty: "Medicina Interna",
-    license: "MD-12345",
-    hospital: "Hospital Nacional",
-    phone: "+53 5555-9876"
-  });
-
-  // Función para manejar la selección de imagen
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      // Validar tamaño del archivo (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('La imagen es demasiado grande. Máximo 5MB permitido.');
-        return;
-      }
-      
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setProfileImage(e.target.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Función para activar el input file al hacer clic en el círculo
-  const handleCircleClick = () => {
-    fileInputRef.current.click();
-  };
-
-  // Componente Button
-  const Button = ({ 
-    children, 
-    size = 'md', 
-    variant = 'default', 
-    className = '', 
-    asChild = false, 
-    ...props 
+// Componente Button
+const Button = ({
+    children,
+    size = 'md',
+    variant = 'default',
+    className = '',
+    asChild = false,
+    ...props
   }) => {
     const sizeClasses = {
       sm: 'px-3 py-1.5 text-sm',
       md: 'px-4 py-2',
       lg: 'px-6 py-3 text-lg'
     };
-    
+
     const variantClasses = {
       default: 'bg-primary text-white hover:bg-primary/90',
       outline: 'border border-primary text-primary bg-transparent hover:bg-primary/10',
       destructive: 'bg-destructive text-white hover:bg-destructive/90'
     };
-    
+
     const classes = `rounded-md font-medium transition-colors ${sizeClasses[size]} ${variantClasses[variant]} ${className}`;
-    
+
     if (asChild) {
       return cloneElement(Children.only(children), {
         className: `${children.props.className || ''} ${classes}`,
         ...props
       });
     }
-    
+
     return (
       <button className={classes} {...props}>
         {children}
@@ -98,16 +41,16 @@ export function DoctorProfile () {
   };
 
   // Componente Input
-  const Input = ({ 
-    id, 
-    value, 
-    className = '', 
+  const Input = ({
+    id,
+    value,
+    className = '',
     type = 'text',
     onChange,
-    ...props 
+    ...props
   }) => {
     const classes = `flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`;
-    
+
     return (
       <input
         id={id}
@@ -121,13 +64,13 @@ export function DoctorProfile () {
   };
 
   // Componente Label
-  const Label = ({ 
-    htmlFor, 
-    children, 
-    className = '' 
+  const Label = ({
+    htmlFor,
+    children,
+    className = ''
   }) => {
     const classes = `text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${className}`;
-    
+
     return (
       <label htmlFor={htmlFor} className={classes}>
         {children}
@@ -169,6 +112,60 @@ export function DoctorProfile () {
         {children}
       </div>
     );
+  };
+
+export function DoctorProfile () {
+  const navigate = useNavigate();
+  const [userName] = useState("Dr. Carlos Mendoza");
+  const [notificationCount] = useState(5);
+  const fileInputRef = useRef(null);
+  
+  // Estado para la foto de perfil - Cargar desde localStorage si existe
+  const [profileImage, setProfileImage] = useState(() => {
+    const savedImage = localStorage.getItem('doctorProfileImage');
+    return savedImage || null;
+  });
+
+  // Efecto para guardar la imagen cuando cambie
+  useEffect(() => {
+    if (profileImage) {
+      localStorage.setItem('doctorProfileImage', profileImage);
+    } else {
+      localStorage.removeItem('doctorProfileImage');
+    }
+  }, [profileImage]);
+
+  const handleLogout = () => {
+    navigate("/");
+  };
+
+  const [profileData, setProfileData] = useState({
+    name: "Dr. Carlos Mendoza",
+    email: "carlos.mendoza@doctor.com",
+    specialty: "Medicina Interna",
+    license: "MD-12345",
+    hospital: "Hospital Nacional",
+    phone: "+53 5555-9876"
+  });
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('La imagen es demasiado grande. Máximo 5MB permitido.');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProfileImage(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCircleClick = () => {
+    fileInputRef.current.click();
   };
 
   return (

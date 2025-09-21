@@ -1,36 +1,175 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Footer } from "../Components/Footer";
 import { Header } from "../Components/Header";
+import apiService from "../utils/apiService";
+
+// Componente Button
+const Button = ({ 
+  variant = "default", 
+  size = "default", 
+  className = "", 
+  children, 
+  onClick,
+  type = "button",
+  disabled = false,
+  ...props 
+}) => {
+  const baseClasses = "btn";
+  const variantClasses = {
+    default: "btn-default",
+    outline: "btn-outline",
+    destructive: "btn-destructive",
+    secondary: "btn-secondary"
+  };
+  const sizeClasses = {
+    default: "",
+    sm: "btn-sm",
+    lg: "btn-lg",
+    icon: "btn-icon"
+  };
+  
+  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+  
+  return (
+    <button 
+      className={classes} 
+      onClick={onClick} 
+      type={type}
+      disabled={disabled}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+
+// Componente Input - CORREGIDO: Agregar readOnly para campos deshabilitados
+const Input = ({ id, name, value, onChange, type = "text", placeholder = "", className = "", disabled = false, readOnly = false }) => {
+  return (
+    <input
+      id={id}
+      name={name}
+      type={type}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      className={`input ${className}`}
+      disabled={disabled}
+      readOnly={readOnly}
+    />
+  );
+};
+
+// Componente Textarea - CORREGIDO: Agregar readOnly para campos deshabilitados
+const Textarea = ({ id, name, value, onChange, placeholder = "", className = "", disabled = false, readOnly = false }) => {
+  return (
+    <textarea
+      id={id}
+      name={name}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      className={`textarea ${className}`}
+      rows={4}
+      disabled={disabled}
+      readOnly={readOnly}
+    />
+  );
+};
+
+// Componente Label
+const Label = ({ htmlFor, children, className = "" }) => {
+  return (
+    <label htmlFor={htmlFor} className={`label ${className}`}>
+      {children}
+    </label>
+  );
+};
+
+// Componente Select
+const Select = ({ id, name, value, onChange, className = "", children }) => {
+  return (
+    <select
+      id={id}
+      name={name}
+      value={value}
+      onChange={onChange}
+      className={`select ${className}`}
+    >
+      {children}
+    </select>
+  );
+};
+
+// Componente Card
+const Card = ({ className = "", children }) => {
+  return (
+    <div className={`card ${className}`}>
+      {children}
+    </div>
+  );
+};
+
+// Componente CardHeader
+const CardHeader = ({ className = "", children }) => {
+  return (
+    <div className={`card-header ${className}`}>
+      {children}
+    </div>
+  );
+};
+
+// Componente CardTitle
+const CardTitle = ({ className = "", children }) => {
+  return (
+    <h3 className={`card-title ${className}`}>
+      {children}
+    </h3>
+  );
+};
+
+// Componente CardContent
+const CardContent = ({ className = "", children }) => {
+  return (
+    <div className={`card-content ${className}`}>
+      {children}
+    </div>
+  );
+};
 
 export function DoctorRevision() {
   const navigate = useNavigate();
+  const { id: documentId } = useParams();
   const [userName] = useState("Dr. Carlos Mendoza");
   const [userEmail] = useState("dr.mendoza@hospital.com");
   const [notificationCount] = useState(3);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isAlreadyGraded, setIsAlreadyGraded] = useState(false);
 
   const [formData, setFormData] = useState({
-    // Student data (pre-filled)
-    studentName: "Juan Pérez",
-    studentEmail: "juan.perez@estudiante.com",
+    // Student data (pre-filled from API)
+    studentName: "",
+    studentEmail: "",
     doctorEmail: userEmail,
     
-    // Patient data
-    patientName: "María García",
-    patientCI: "12345678901",
-    patientAge: "32",
-    patientSex: "femenino",
-    patientWeight: "68",
-    patientPhone: "+53 5555-1234",
-    symptoms: "Dolor abdominal intenso, náuseas, fiebre de 38.5°C",
-    conditions: "Hipertensión arterial",
-    allergies: "Penicilina",
+    // Patient data (pre-filled from API)
+    patientName: "",
+    patientCI: "",
+    patientAge: "",
+    patientSex: "",
+    patientWeight: "",
+    patientPhone: "",
+    symptoms: "",
+    conditions: "",
+    allergies: "",
     
-    // Student evaluation
-    medications: "Paracetamol 500mg cada 8 horas",
-    observations: "Paciente presenta dolor a la palpación en fossa ilíaca derecha",
-    diagnosis: "Apendicitis aguda",
-    treatment: "Intervención quirúrgica urgente, antibioticoterapia",
+    // Student evaluation (pre-filled from API)
+    medications: "",
+    observations: "",
+    diagnosis: "",
+    treatment: "",
     
     // Doctor evaluation (nuevos campos)
     nota: "",
@@ -41,139 +180,74 @@ export function DoctorRevision() {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Componente Button
-  const Button = ({ 
-    variant = "default", 
-    size = "default", 
-    className = "", 
-    children, 
-    onClick,
-    type = "button",
-    disabled = false,
-    ...props 
-  }) => {
-    const baseClasses = "btn";
-    const variantClasses = {
-      default: "btn-default",
-      outline: "btn-outline",
-      destructive: "btn-destructive",
-      secondary: "btn-secondary"
+  // Load document data on component mount
+  useEffect(() => {
+    const loadDocumentData = async () => {
+      if (!documentId) {
+        setError('ID de documento no proporcionado');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const documents = await apiService.getCurrentDoctorDocuments();
+        const document = documents.find(doc => doc.id === parseInt(documentId));
+        
+        if (!document) {
+          setError('Documento no encontrado');
+          return;
+        }
+
+        const transformedData = apiService.transformDocument(document);
+        
+        // Load existing notes for this document
+        let existingNote = null;
+        try {
+          const notes = await apiService.getDocumentNotes(documentId);
+          if (notes && notes.length > 0) {
+            // Get the most recent note
+            existingNote = notes[notes.length - 1];
+            setIsAlreadyGraded(true);
+          }
+        } catch (noteError) {
+          console.log('No existing notes found or error loading notes:', noteError);
+        }
+        
+        // Fill form with document data
+        setFormData({
+          studentName: transformedData.studentName,
+          studentEmail: transformedData.studentEmail,
+          doctorEmail: userEmail,
+          patientName: transformedData.patientName,
+          patientCI: transformedData.patientCI,
+          patientAge: transformedData.patientAge,
+          patientSex: transformedData.patientSex,
+          patientWeight: transformedData.patientWeight,
+          patientPhone: transformedData.patientPhone,
+          symptoms: transformedData.symptoms,
+          conditions: transformedData.conditions,
+          allergies: transformedData.allergies,
+          medications: transformedData.medications,
+          observations: transformedData.observations,
+          diagnosis: transformedData.diagnosis,
+          treatment: transformedData.treatment,
+          // Pre-fill evaluation data if already graded
+          nota: existingNote ? existingNote.grade.toString() : "",
+          criterio: existingNote ? existingNote.evaluationCriteria?.feedback || "" : "",
+          correccionDiagnostico: existingNote ? existingNote.diagnosticCorrection?.correctedDiagnosis || "" : ""
+        });
+        
+      } catch (err) {
+        console.error('Error loading document:', err);
+        setError('Error al cargar el documento');
+      } finally {
+        setLoading(false);
+      }
     };
-    const sizeClasses = {
-      default: "",
-      sm: "btn-sm",
-      lg: "btn-lg",
-      icon: "btn-icon"
-    };
-    
-    const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
-    
-    return (
-      <button 
-        className={classes} 
-        onClick={onClick} 
-        type={type}
-        disabled={disabled}
-        {...props}
-      >
-        {children}
-      </button>
-    );
-  };
 
-  // Componente Input - CORREGIDO: Agregar readOnly para campos deshabilitados
-  const Input = ({ id, name, value, onChange, type = "text", placeholder = "", className = "", disabled = false, readOnly = false }) => {
-    return (
-      <input
-        id={id}
-        name={name}
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className={`input ${className}`}
-        disabled={disabled}
-        readOnly={readOnly}
-      />
-    );
-  };
-
-  // Componente Textarea - CORREGIDO: Agregar readOnly para campos deshabilitados
-  const Textarea = ({ id, name, value, onChange, placeholder = "", className = "", disabled = false, readOnly = false }) => {
-    return (
-      <textarea
-        id={id}
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className={`textarea ${className}`}
-        rows={4}
-        disabled={disabled}
-        readOnly={readOnly}
-      />
-    );
-  };
-
-  // Componente Label
-  const Label = ({ htmlFor, children, className = "" }) => {
-    return (
-      <label htmlFor={htmlFor} className={`label ${className}`}>
-        {children}
-      </label>
-    );
-  };
-
-  // Componente Select
-  const Select = ({ id, name, value, onChange, className = "", children }) => {
-    return (
-      <select
-        id={id}
-        name={name}
-        value={value}
-        onChange={onChange}
-        className={`select ${className}`}
-      >
-        {children}
-      </select>
-    );
-  };
-
-  // Componente Card
-  const Card = ({ className = "", children }) => {
-    return (
-      <div className={`card ${className}`}>
-        {children}
-      </div>
-    );
-  };
-
-  // Componente CardHeader
-  const CardHeader = ({ className = "", children }) => {
-    return (
-      <div className={`card-header ${className}`}>
-        {children}
-      </div>
-    );
-  };
-
-  // Componente CardTitle
-  const CardTitle = ({ className = "", children }) => {
-    return (
-      <h3 className={`card-title ${className}`}>
-        {children}
-      </h3>
-    );
-  };
-
-  // Componente CardContent
-  const CardContent = ({ className = "", children }) => {
-    return (
-      <div className={`card-content ${className}`}>
-        {children}
-      </div>
-    );
-  };
+    loadDocumentData();
+  }, [documentId, userEmail]);
 
   // Función toast simulada
   const toast = ({ title, description, variant = "default" }) => {
@@ -218,8 +292,23 @@ export function DoctorRevision() {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Submit evaluation to API using the new grading system
+      const gradeData = {
+        grade: parseInt(formData.nota),
+        evaluationCriteria: {
+          feedback: formData.criterio,
+          analysisQuality: "Pendiente de análisis detallado",
+          clinicalAccuracy: "Pendiente de análisis detallado",
+          treatmentPlan: "Pendiente de análisis detallado"
+        },
+        diagnosticCorrection: {
+          originalDiagnosis: formData.diagnosis,
+          correctedDiagnosis: formData.correccionDiagnostico,
+          correctionReason: formData.criterio
+        }
+      };
+
+      await apiService.gradeDocument(documentId, gradeData);
       
       toast({
         title: "Evaluación enviada exitosamente",
@@ -237,7 +326,8 @@ export function DoctorRevision() {
       // Redirect to dashboard
       navigate("/doctor/dashboard");
       
-    } catch (error) {
+    } catch (err) {
+      console.error('Error submitting evaluation:', err);
       toast({
         title: "Error al enviar evaluación",
         description: "Hubo un problema al enviar tu evaluación. Inténtalo de nuevo.",
@@ -281,13 +371,58 @@ export function DoctorRevision() {
         </div>
       </section>
 
-      {/* Consultation Form */}
-      <section className="py-16 bg-background">
-        <div className="container px-4 mx-auto">
-          <div className="max-w-4xl p-6 mx-auto bg-white shadow-lg md:p-8 rounded-xl">
-            <form onSubmit={handleSubmit} className="space-y-10">
+      {/* Loading State */}
+      {loading && (
+        <section className="py-16 bg-background">
+          <div className="container px-4 mx-auto">
+            <div className="flex items-center justify-center py-8">
+              <i className="mr-3 text-3xl fas fa-spinner fa-spin text-primary"></i>
+              <span className="text-xl text-muted-foreground">Cargando consulta...</span>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Error State */}
+      {error && !loading && (
+        <section className="py-16 bg-background">
+          <div className="container px-4 mx-auto">
+            <div className="max-w-2xl mx-auto p-6 text-center bg-destructive/10 rounded-lg">
+              <i className="mb-4 text-4xl fas fa-exclamation-triangle text-destructive"></i>
+              <h3 className="mb-2 text-xl font-semibold text-foreground">Error al cargar la consulta</h3>
+              <p className="mb-4 text-destructive">{error}</p>
+              <Button onClick={() => navigate("/doctor/notifications")} variant="outline">
+                <i className="mr-2 fas fa-arrow-left"></i>
+                Volver a notificaciones
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Consultation Form - Only show when not loading and no error */}
+      {!loading && !error && (
+        <section className="py-16 bg-background">
+          <div className="container px-4 mx-auto">
+            {/* Already Graded Warning */}
+            {isAlreadyGraded && (
+              <div className="max-w-4xl mx-auto mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-center">
+                  <i className="mr-3 text-yellow-600 fas fa-exclamation-circle"></i>
+                  <div>
+                    <h3 className="font-semibold text-yellow-800">Consulta ya evaluada</h3>
+                    <p className="text-yellow-700">
+                      Esta consulta ya ha sido calificada. Puedes modificar la evaluación si es necesario.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="max-w-4xl p-6 mx-auto bg-white shadow-lg md:p-8 rounded-xl">
+              <form onSubmit={handleSubmit} className="space-y-10">
               
-              {/* Student Information Card */}
+                {/* Student Information Card */}
               <Card className="p-6 border medical-card md:p-8 bg-muted/20 rounded-xl border-border">
                 <CardHeader className="pb-4">
                   <CardTitle className="text-2xl text-foreground">
@@ -557,11 +692,11 @@ export function DoctorRevision() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Campo Nota (2-5) */}
+                  {/* Campo Nota (0-5) */}
                   <div>
                     <Label htmlFor="nota" className="block mb-2">
                       <i className="mr-2 text-blue-600 fas fa-star"></i>
-                      Calificación (2-5) *
+                      Calificación (0-5) *
                     </Label>
                     <Select
                       id="nota"
@@ -571,7 +706,9 @@ export function DoctorRevision() {
                       className={`medical-input w-full p-3 ${errors.nota ? 'border-destructive' : ''}`}
                     >
                       <option value="">Seleccionar nota</option>
-                      <option value="2">2 - Insuficiente</option>
+                      <option value="0">0 - No Aprobado</option>
+                      <option value="1">1 - Muy Deficiente</option>
+                      <option value="2">2 - Deficiente</option>
                       <option value="3">3 - Aceptable</option>
                       <option value="4">4 - Bueno</option>
                       <option value="5">5 - Excelente</option>
@@ -640,12 +777,12 @@ export function DoctorRevision() {
                   {isSubmitting ? (
                     <>
                       <i className="mr-2 fas fa-spinner fa-spin"></i>
-                      Enviando evaluación...
+                      {isAlreadyGraded ? "Actualizando evaluación..." : "Enviando evaluación..."}
                     </>
                   ) : (
                     <>
                       <i className="mr-2 fas fa-paper-plane"></i>
-                      Enviar evaluación
+                      {isAlreadyGraded ? "Actualizar evaluación" : "Enviar evaluación"}
                     </>
                   )}
                 </Button>
@@ -654,6 +791,7 @@ export function DoctorRevision() {
           </div>
         </div>
       </section>
+      )}
 
       <Footer isAuthenticated={true} />      
     </div>

@@ -1,20 +1,20 @@
-import { useState, useEffect, cloneElement, Children } from "react";
+import React, { useState, useEffect, Children } from "react";
 import { Header } from "../Components/Header";
 import { Footer } from "../Components/Footer";
 import { Link, useNavigate } from "react-router-dom";
 import apiService from "../utils/apiService";
 
-export function StudentDashboard() {
+export function StudentConsultations() {
   const navigate = useNavigate();
   const [userName] = useState("Juan Pérez");
   const [notificationCount, setNotificationCount] = useState(0);
-  const [recentConsultations, setRecentConsultations] = useState([]);
-  const [quickStats, setQuickStats] = useState([]);
+  const [allConsultations, setAllConsultations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedConsultation, setSelectedConsultation] = useState(null);
   const [isModalLoading, setIsModalLoading] = useState(false);
+  const [filter, setFilter] = useState("all"); // 'all', 'pending', 'evaluated'
 
   const handleViewDetails = async (documentId) => {
     setIsModalLoading(true);
@@ -22,7 +22,7 @@ export function StudentDashboard() {
     setSelectedConsultation(null);
     try {
       // Obtener documento (intentar buscarlo en las consultas cargadas primero)
-      let doc = recentConsultations.find((d) => d.id === documentId);
+      let doc = allConsultations.find((d) => d.id === documentId);
       if (!doc) {
         // Si no está en las recientes, solicitar desde la API todos los documentos y buscar
         const allDocs = await apiService.getStudentDocumentsWithNotes();
@@ -50,58 +50,28 @@ export function StudentDashboard() {
 
   // Load data from API on component mount
   useEffect(() => {
-    const loadDashboardData = async () => {
+    const loadAllConsultations = async () => {
       try {
         setLoading(true);
 
         // Load student documents with notes
         const documents = await apiService.getStudentDocumentsWithNotes();
 
-        // Load student statistics
-        const stats = await apiService.getStudentStats();
-
-        // Set recent consultations (limit to 3 for display)
-        setRecentConsultations(documents.slice(0, 3));
+        // Set all consultations
+        setAllConsultations(documents);
 
         // Set notification count to pending consultations
-        setNotificationCount(stats.pendingCount);
-
-        // Set statistics
-        setQuickStats([
-          {
-            title: "Consultas Realizadas",
-            value: stats.totalConsultations.toString(),
-            icon: "fas fa-file-medical",
-            color: "bg-primary",
-          },
-          {
-            title: "Promedio General",
-            value: stats.overallAverage,
-            icon: "fas fa-chart-line",
-            color: "bg-accent",
-          },
-          {
-            title: "Evaluaciones Pendientes",
-            value: stats.pendingCount.toString(),
-            icon: "fas fa-clock",
-            color: "bg-secondary",
-          },
-          {
-            title: "Doctores Evaluadores",
-            value: stats.uniqueDoctorsCount.toString(),
-            icon: "fas fa-user-md",
-            color: "bg-primary",
-          },
-        ]);
+        const pending = documents.filter((doc) => !doc.isEvaluated);
+        setNotificationCount(pending.length);
       } catch (error) {
-        console.error("Error loading student dashboard data:", error);
-        setError("Error al cargar los datos del dashboard");
+        console.error("Error loading student consultations:", error);
+        setError("Error al cargar las consultas");
       } finally {
         setLoading(false);
       }
     };
 
-    loadDashboardData();
+    loadAllConsultations();
   }, []);
 
   const handleLogout = () => {
@@ -133,7 +103,7 @@ export function StudentDashboard() {
     const classes = `rounded-md font-medium transition-colors ${sizeClasses[size]} ${variantClasses[variant]} ${className}`;
 
     if (asChild) {
-      return cloneElement(Children.only(children), {
+      return React.cloneElement(Children.only(children), {
         className: `${children.props.className || ""} ${classes}`,
         ...props,
       });
@@ -199,6 +169,12 @@ export function StudentDashboard() {
     );
   };
 
+  const filteredConsultations = allConsultations.filter((consultation) => {
+    if (filter === "pending") return !consultation.isEvaluated;
+    if (filter === "evaluated") return consultation.isEvaluated;
+    return true;
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <Header
@@ -214,76 +190,58 @@ export function StudentDashboard() {
         <div className="container px-4 mx-auto">
           <div className="text-center text-white">
             <h1 className="mb-4 text-4xl font-bold md:text-5xl font-heading">
-              <i className="mr-3 fas fa-tachometer-alt"></i>
-              Dashboard Estudiante
+              <i className="mr-3 fas fa-history"></i>
+              Todas mis Consultas
             </h1>
             <p className="text-xl text-white/90">
-              Bienvenido de vuelta, <strong>{userName}</strong>
-            </p>
-            <p className="mt-2 text-lg text-white/80">
-              Gestiona tus consultas médicas y revisa tus evaluaciones
+              Revisa el historial completo de tus consultas médicas
             </p>
           </div>
         </div>
       </section>
 
-      {/* Stats Cards */}
-      <section className="py-8 bg-muted/30">
+      {/* Filter Section */}
+      <section className="py-8 bg-background">
         <div className="container px-4 mx-auto">
-          <h2 className="mb-6 text-2xl font-bold text-center font-heading text-foreground">
-            Resumen de Actividad
-          </h2>
-
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <i className="mr-3 text-2xl fas fa-spinner fa-spin text-primary"></i>
-              <span className="text-lg text-muted-foreground">
-                Cargando estadísticas...
-              </span>
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="flex gap-2">
+              <Button
+                variant={filter === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilter("all")}
+              >
+                Todas ({allConsultations.length})
+              </Button>
+              <Button
+                variant={filter === "pending" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilter("pending")}
+              >
+                Pendientes (
+                {allConsultations.filter((c) => !c.isEvaluated).length})
+              </Button>
+              <Button
+                variant={filter === "evaluated" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilter("evaluated")}
+              >
+                Evaluadas (
+                {allConsultations.filter((c) => c.isEvaluated).length})
+              </Button>
             </div>
-          ) : error ? (
-            <div className="p-6 text-center bg-destructive/10 rounded-lg">
-              <i className="mb-2 text-3xl fas fa-exclamation-triangle text-destructive"></i>
-              <p className="text-destructive">{error}</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {quickStats.map((stat, index) => (
-                <Card key={index} className="text-center medical-card">
-                  <CardContent className="p-6">
-                    <div
-                      className={`w-16 h-16 ${stat.color} rounded-full flex items-center justify-center mx-auto mb-4`}
-                    >
-                      <i className={`${stat.icon} text-white text-2xl`}></i>
-                    </div>
-                    <div className="mb-2 text-3xl font-bold text-foreground">
-                      {stat.value}
-                    </div>
-                    <div className="text-muted-foreground">{stat.title}</div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Recent Consultations */}
-      <section className="py-12 bg-background">
-        <div className="container px-4 mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold font-heading text-foreground">
-              <i className="mr-3 fas fa-history text-primary"></i>
-              Consultas Recientes
-            </h2>
-            <Button variant="outline" asChild>
-              <Link to="/student/consultations">
-                Ver todas
-                <i className="ml-2 fas fa-arrow-right"></i>
+            <Button asChild>
+              <Link to="/student/consultation">
+                <i className="mr-2 fas fa-plus"></i>
+                Nueva consulta
               </Link>
             </Button>
           </div>
+        </div>
+      </section>
 
+      {/* Consultations List */}
+      <section className="py-8 bg-muted/30">
+        <div className="container px-4 mx-auto">
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <i className="mr-3 text-2xl fas fa-spinner fa-spin text-primary"></i>
@@ -296,25 +254,35 @@ export function StudentDashboard() {
               <i className="mb-2 text-3xl fas fa-exclamation-triangle text-destructive"></i>
               <p className="text-destructive">{error}</p>
             </div>
-          ) : recentConsultations.length === 0 ? (
-            <div className="p-8 text-center bg-muted/30 rounded-lg">
+          ) : filteredConsultations.length === 0 ? (
+            <div className="p-8 text-center bg-background rounded-lg">
               <i className="mb-4 text-4xl fas fa-file-medical text-muted-foreground"></i>
               <h3 className="mb-2 text-xl font-semibold text-foreground">
-                Sin consultas realizadas
+                {filter === "pending"
+                  ? "No hay consultas pendientes"
+                  : filter === "evaluated"
+                  ? "No hay consultas evaluadas"
+                  : "No has realizado consultas aún"}
               </h3>
               <p className="mb-4 text-muted-foreground">
-                Aún no has enviado ninguna consulta médica
+                {filter === "pending"
+                  ? "Todas tus consultas han sido evaluadas"
+                  : filter === "evaluated"
+                  ? "Aún no tienes consultas evaluadas"
+                  : "Comienza creando tu primera consulta médica"}
               </p>
-              <Button asChild>
-                <Link to="/student/consultation">
-                  <i className="mr-2 fas fa-plus"></i>
-                  Crear primera consulta
-                </Link>
-              </Button>
+              {filter === "all" && (
+                <Button asChild>
+                  <Link to="/student/consultation">
+                    <i className="mr-2 fas fa-plus"></i>
+                    Crear primera consulta
+                  </Link>
+                </Button>
+              )}
             </div>
           ) : (
-            <div className="grid gap-6">
-              {recentConsultations.map((consultation) => (
+            <div className="space-y-6">
+              {filteredConsultations.map((consultation) => (
                 <Card key={consultation.id} className="medical-card">
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -485,7 +453,7 @@ export function StudentDashboard() {
       {/* Modal: Detalles de la consulta */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-3xl p-6 bg-white rounded-lg shadow-lg">
+          <div className="w-full max-w-3xl p-6 bg-white rounded-lg shadow-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-semibold">Detalles de la Consulta</h3>
               <button
@@ -495,7 +463,7 @@ export function StudentDashboard() {
                   setSelectedConsultation(null);
                 }}
               >
-                Cerrar
+                <i className="fas fa-times"></i>
               </button>
             </div>
 
@@ -597,54 +565,9 @@ export function StudentDashboard() {
         </div>
       )}
 
-      {/* Tips Section */}
-      <section className="py-12 bg-muted/30">
-        <div className="container px-4 mx-auto">
-          <h2 className="mb-8 text-2xl font-bold text-center font-heading text-foreground">
-            <i className="mr-3 fas fa-lightbulb text-accent"></i>
-            Consejos para Mejores Evaluaciones
-          </h2>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <Card className="text-center transition-transform duration-300 medical-card hover:scale-105">
-              <CardContent className="p-6">
-                <i className="mb-4 text-3xl fas fa-clipboard-check text-primary"></i>
-                <h3 className="mb-3 font-semibold font-heading text-foreground">
-                  Documentación Detallada
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Incluye todos los datos relevantes del paciente y síntomas
-                  observados
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="text-center transition-transform duration-300 medical-card hover:scale-105">
-              <CardContent className="p-6">
-                <i className="mb-4 text-3xl fas fa-search text-accent"></i>
-                <h3 className="mb-3 font-semibold font-heading text-foreground">
-                  Análisis Profundo
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Justifica tu diagnóstico con base en evidencia clínica y
-                  síntomas
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="text-center transition-transform duration-300 medical-card hover:scale-105">
-              <CardContent className="p-6">
-                <i className="mb-4 text-3xl fas fa-pills text-secondary"></i>
-                <h3 className="mb-3 font-semibold font-heading text-foreground">
-                  Tratamiento Integral
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Propone un plan de tratamiento completo y realista
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
       <Footer isAuthenticated={true} isStudent={true} />
     </div>
   );
 }
+
+export default StudentConsultations;

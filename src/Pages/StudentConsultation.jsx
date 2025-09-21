@@ -1,19 +1,155 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Footer } from "../Components/Footer";
 import { Header } from "../Components/Header";
+import {parseJwt} from "../utils/utils";
+import { endpoint } from "../utils/endpoint";
+
+// Componente Button
+const Button = ({ 
+  variant = "default", 
+  size = "default", 
+  className = "", 
+  children, 
+  onClick,
+  type = "button",
+  disabled = false,
+  ...props 
+}) => {
+  const baseClasses = "btn";
+  const variantClasses = {
+    default: "btn-default",
+    outline: "btn-outline",
+    destructive: "btn-destructive",
+    secondary: "btn-secondary"
+  };
+  const sizeClasses = {
+    default: "",
+    sm: "btn-sm",
+    lg: "btn-lg",
+    icon: "btn-icon"
+  };
+  
+  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+  
+  return (
+    <button 
+      className={classes} 
+      onClick={onClick} 
+      type={type}
+      disabled={disabled}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+
+// Componente Input
+const Input = ({ id, name, value, onChange, type = "text", placeholder = "", className = "", disabled = false }) => {
+  return (
+    <input
+      id={id}
+      name={name}
+      type={type}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      className={`input ${className}`}
+      disabled={disabled}
+    />
+  );
+};
+
+// Componente Textarea
+const Textarea = ({ id, name, value, onChange, placeholder = "", className = "" }) => {
+  return (
+    <textarea
+      id={id}
+      name={name}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      className={`textarea ${className}`}
+      rows={4}
+    />
+  );
+};
+
+// Componente Label
+const Label = ({ htmlFor, children, className = "" }) => {
+  return (
+    <label htmlFor={htmlFor} className={`label ${className}`}>
+      {children}
+    </label>
+  );
+};
+
+// Componente Select
+const Select = ({ id, name, value, onChange, className = "", children }) => {
+  return (
+    <select
+      id={id}
+      name={name}
+      value={value}
+      onChange={onChange}
+      className={`select ${className}`}
+    >
+      {children}
+    </select>
+  );
+};
+
+// Componente Card
+const Card = ({ className = "", children }) => {
+  return (
+    <div className={`card ${className}`}>
+      {children}
+    </div>
+  );
+};
+
+// Componente CardHeader
+const CardHeader = ({ className = "", children }) => {
+  return (
+    <div className={`card-header ${className}`}>
+      {children}
+    </div>
+  );
+};
+
+// Componente CardTitle
+const CardTitle = ({ className = "", children }) => {
+  return (
+    <h3 className={`card-title ${className}`}>
+      {children}
+    </h3>
+  );
+};
+
+// Componente CardContent
+const CardContent = ({ className = "", children }) => {
+  return (
+    <div className={`card-content ${className}`}>
+      {children}
+    </div>
+  );
+};
 
 const StudentConsultation = () => {
   const navigate = useNavigate();
-  const [userName] = useState("Juan Pérez");
-  const [userEmail] = useState("juan.perez@estudiante.com");
+  const [userInfo, setUserInfo] = useState(null);
   const [notificationCount] = useState(3);
+  const [doctors, setDoctors] = useState([]);
+  const [isDataFromToken, setIsDataFromToken] = useState({
+    name: false,
+    email: false
+  });
 
   const [formData, setFormData] = useState({
-    // Student data (pre-filled)
-    studentName: userName,
-    studentEmail: userEmail,
-    doctorEmail: "",
+    studentName: "",
+    studentEmail: "",
+    doctorId: "",
     
     // Patient data
     patientName: "",
@@ -26,7 +162,6 @@ const StudentConsultation = () => {
     conditions: "",
     allergies: "",
     
-    // Student evaluation
     medications: "",
     observations: "",
     diagnosis: "",
@@ -36,135 +171,50 @@ const StudentConsultation = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Componente Button
-  const Button = ({ 
-    variant = "default", 
-    size = "default", 
-    className = "", 
-    children, 
-    onClick,
-    type = "button",
-    disabled = false,
-    ...props 
-  }) => {
-    const baseClasses = "btn";
-    const variantClasses = {
-      default: "btn-default",
-      outline: "btn-outline",
-      destructive: "btn-destructive",
-      secondary: "btn-secondary"
-    };
-    const sizeClasses = {
-      default: "",
-      sm: "btn-sm",
-      lg: "btn-lg",
-      icon: "btn-icon"
-    };
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      const userDataFromToken = parseJwt(token);
+      if (userDataFromToken) {
+        setUserInfo(userDataFromToken);
+        const hasName = !!(userDataFromToken.name);
+        const hasEmail = !!(userDataFromToken.email);
+        
+        setIsDataFromToken({
+          name: hasName,
+          email: hasEmail
+        });
+        
+        setFormData(prev => ({
+          ...prev,
+          studentName: userDataFromToken.name || "",
+          studentEmail: userDataFromToken.email || ""
+        }));
+      }
+    }
     
-    const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
-    
-    return (
-      <button 
-        className={classes} 
-        onClick={onClick} 
-        type={type}
-        disabled={disabled}
-        {...props}
-      >
-        {children}
-      </button>
-    );
-  };
+    fetchDoctors();
+  }, []);
 
-  // Componente Input
-  const Input = ({ id, name, value, onChange, type = "text", placeholder = "", className = "", disabled = false }) => {
-    return (
-      <input
-        id={id}
-        name={name}
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className={`input ${className}`}
-        disabled={disabled}
-      />
-    );
-  };
+  useEffect(() => {
+    fetchDoctors();
+  }, []);
 
-  // Componente Textarea
-  const Textarea = ({ id, name, value, onChange, placeholder = "", className = "" }) => {
-    return (
-      <textarea
-        id={id}
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className={`textarea ${className}`}
-        rows={4}
-      />
-    );
-  };
-
-  // Componente Label
-  const Label = ({ htmlFor, children, className = "" }) => {
-    return (
-      <label htmlFor={htmlFor} className={`label ${className}`}>
-        {children}
-      </label>
-    );
-  };
-
-  // Componente Select (simplificado para el campo de sexo)
-  const Select = ({ id, name, value, onChange, className = "", children }) => {
-    return (
-      <select
-        id={id}
-        name={name}
-        value={value}
-        onChange={onChange}
-        className={`select ${className}`}
-      >
-        {children}
-      </select>
-    );
-  };
-
-  // Componente Card
-  const Card = ({ className = "", children }) => {
-    return (
-      <div className={`card ${className}`}>
-        {children}
-      </div>
-    );
-  };
-
-  // Componente CardHeader
-  const CardHeader = ({ className = "", children }) => {
-    return (
-      <div className={`card-header ${className}`}>
-        {children}
-      </div>
-    );
-  };
-
-  // Componente CardTitle
-  const CardTitle = ({ className = "", children }) => {
-    return (
-      <h3 className={`card-title ${className}`}>
-        {children}
-      </h3>
-    );
-  };
-
-  // Componente CardContent
-  const CardContent = ({ className = "", children }) => {
-    return (
-      <div className={`card-content ${className}`}>
-        {children}
-      </div>
-    );
+  const fetchDoctors = async () => {
+    try {
+      const response = await fetch('http://rudy-backend-e2itqr-09d86f-31-97-130-237.traefik.me/doctors', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem("authToken")}`,
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data);
+        setDoctors(data.users);
+      }
+    } catch (error) {
+      console.error('Error fetching doctors:', error);
+    }
   };
 
   // Función toast simulada
@@ -180,14 +230,19 @@ const StudentConsultation = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    // Doctor email validation
-    if (!formData.doctorEmail.trim()) {
-      newErrors.doctorEmail = "El correo del doctor es requerido";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.doctorEmail)) {
-      newErrors.doctorEmail = "Formato de correo inválido";
+    if (!formData.studentName.trim()) {
+      newErrors.studentName = "Nombre del estudiante requerido";
+    }
+    if (!formData.studentEmail.trim()) {
+      newErrors.studentEmail = "Correo del estudiante requerido";
+    } else if (!/\S+@\S+\.\S+/.test(formData.studentEmail)) {
+      newErrors.studentEmail = "Formato de correo inválido";
     }
 
-    // Patient data validation
+    if (!formData.doctorId) {
+      newErrors.doctorId = "Selecciona un doctor evaluador";
+    }
+
     if (!formData.patientName.trim()) {
       newErrors.patientName = "Nombre del paciente requerido";
     }
@@ -234,19 +289,38 @@ const StudentConsultation = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      console.log(parseJwt(localStorage.getItem("authToken")).id);
+      // Send data to backend
+      const response = await fetch(`${endpoint}/generate-document`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem("authToken")}`,
+        },
+        body: JSON.stringify({
+          studentId: parseJwt(localStorage.getItem("authToken")).id,
+          doctorId: parseInt(formData.doctorId), // Convert to number
+          content: JSON.stringify(formData)
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // const result = await response.json(); // Not used
       
       toast({
         title: "Consulta enviada exitosamente",
-        description: `Tu consulta ha sido enviada a ${formData.doctorEmail} para evaluación.`,
+        description: "Tu consulta ha sido enviada para evaluación.",
       });
 
       // Reset form
       setFormData({
-        studentName: userName,
-        studentEmail: userEmail,
-        doctorEmail: "",
+        studentName: userInfo?.name || "",
+        studentEmail: userInfo?.email || "",
+        doctorId: "",
         patientName: "",
         patientCI: "",
         patientAge: "",
@@ -266,6 +340,7 @@ const StudentConsultation = () => {
       navigate("/student/dashboard");
       
     } catch (error) {
+      console.error('Error sending consultation:', error);
       toast({
         title: "Error al enviar consulta",
         description: "Hubo un problema al enviar tu consulta. Inténtalo de nuevo.",
@@ -291,7 +366,7 @@ const StudentConsultation = () => {
       <Header 
         isAuthenticated={true}
         userType="student"
-        userName={userName}
+        userName={userInfo?.name || "Usuario"}
         notificationCount={notificationCount}
         onLogout={handleLogout}
       />
@@ -334,9 +409,19 @@ const StudentConsultation = () => {
                         id="studentName"
                         name="studentName"
                         value={formData.studentName}
-                        className="w-full p-3 medical-input bg-muted/30"
-                        disabled
+                        onChange={handleInputChange}
+                        className={`w-full p-3 medical-input ${isDataFromToken.name ? 'bg-blue-50 border-blue-200' : ''} ${errors.studentName ? 'border-destructive' : ''}`}
+                        placeholder="Ingresa tu nombre completo"
                       />
+                      {errors.studentName && (
+                        <p className="mt-2 text-sm text-destructive">{errors.studentName}</p>
+                      )}
+                      {isDataFromToken.name && (
+                        <p className="mt-2 text-sm text-blue-600">
+                          <i className="mr-1 fas fa-check-circle"></i>
+                          Datos obtenidos del token (puedes editarlos si es necesario)
+                        </p>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="studentEmail" className="block mb-2">
@@ -347,31 +432,59 @@ const StudentConsultation = () => {
                         id="studentEmail"
                         name="studentEmail"
                         value={formData.studentEmail}
-                        className="w-full p-3 medical-input bg-muted/30"
-                        disabled
+                        onChange={handleInputChange}
+                        className={`w-full p-3 medical-input ${isDataFromToken.email ? 'bg-blue-50 border-blue-200' : ''} ${errors.studentEmail ? 'border-destructive' : ''}`}
+                        placeholder="Ingresa tu correo electrónico"
                       />
+                      {errors.studentEmail && (
+                        <p className="mt-2 text-sm text-destructive">{errors.studentEmail}</p>
+                      )}
+                      {isDataFromToken.email && (
+                        <p className="mt-2 text-sm text-blue-600">
+                          <i className="mr-1 fas fa-check-circle"></i>
+                          Datos obtenidos del token (puedes editarlos si es necesario)
+                        </p>
+                      )}
                     </div>
                   </div>
+                  {(!isDataFromToken.name || !isDataFromToken.email) && (
+                    <div className="p-4 border-l-4 border-yellow-500 bg-yellow-50">
+                      <div className="flex">
+                        <div className="flex-shrink-0">
+                          <i className="fas fa-exclamation-triangle text-yellow-400"></i>
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm text-yellow-700">
+                            <strong>Información requerida:</strong> Algunos datos del estudiante no están disponibles desde el token. 
+                            Por favor, completa los campos faltantes manualmente.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div>
-                    <Label htmlFor="doctorEmail" className="block mb-2">
+                    <Label htmlFor="doctorId" className="block mb-2">
                       <i className="mr-2 fas fa-user-md text-accent"></i>
-                      Correo del doctor evaluador *
+                      Doctor evaluador *
                     </Label>
-                    <Input
-                      id="doctorEmail"
-                      name="doctorEmail"
-                      type="email"
-                      value={formData.doctorEmail}
+                    <Select
+                      id="doctorId"
+                      name="doctorId"
+                      value={formData.doctorId}
                       onChange={handleInputChange}
-                      className={`medical-input w-full p-3 ${errors.doctorEmail ? 'border-destructive' : ''}`}
-                      placeholder="doctor@ejemplo.com"
-                    />
-                    {errors.doctorEmail && (
-                      <p className="mt-2 text-sm text-destructive">{errors.doctorEmail}</p>
+                      className={`medical-input w-full p-3 ${errors.doctorId ? 'border-destructive' : ''}`}
+                    >
+                      <option value="">Seleccionar doctor</option>
+                      {doctors.map(doctor => (
+                        <option key={doctor.id} value={doctor.id}>{doctor.email}</option>
+                      ))}
+                    </Select>
+                    {errors.doctorId && (
+                      <p className="mt-2 text-sm text-destructive">{errors.doctorId}</p>
                     )}
                     <p className="mt-2 text-sm text-muted-foreground">
                       <i className="mr-1 fas fa-info-circle"></i>
-                      Ingresa el correo del doctor que evaluará tu consulta
+                      Selecciona el doctor que evaluará tu consulta
                     </p>
                   </div>
                 </CardContent>
@@ -563,7 +676,7 @@ const StudentConsultation = () => {
                     </Label>
                     <Textarea
                       id="medications"
-                      name="medifications"
+                      name="medications"
                       value={formData.medications}
                       onChange={handleInputChange}
                       className="medical-input w-full p-3 min-h-[120px]"

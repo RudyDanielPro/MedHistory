@@ -1,46 +1,56 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Header } from "../Components/Header";
 import { Footer } from "../Components/Footer";
 import { useNavigate } from "react-router-dom";
+import apiService from "../utils/apiService";
+
 
 export function StudentNotifications () {
   const navigate = useNavigate();
-  const [userName] = useState("Juan Pérez");
-  const [notificationCount] = useState(3);
+  const [userName, setUserName] = useState("");
+  const [notifications, setNotifications] = useState([]);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const notifs = await apiService.getStudentNotifications();
+        setNotifications(notifs);
+        setNotificationCount(notifs.filter(n => !n.read).length);
+      } catch (err) {
+        setError("No se pudieron cargar las notificaciones.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    // Obtener nombre del usuario del token
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      try {
+        const data = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+        setUserName(data.name || data.username || "Estudiante");
+      } catch {}
+    }
+    fetchNotifications();
+  }, []);
 
   const handleLogout = () => {
     navigate("/");
   };
 
-  const notifications = [
-    {
-      id: 1,
-      type: "evaluation",
-      title: "Consulta evaluada por Dr. Carlos Mendoza",
-      message: "Tu consulta del paciente María González ha sido evaluada. Calificación: 4.5/5.0",
-      date: "2024-01-16",
-      read: false,
-      priority: "high"
-    },
-    {
-      id: 2,
-      type: "reminder",
-      title: "Consulta pendiente de envío",
-      message: "Tienes una consulta guardada como borrador. Complétala y envíala para evaluación.",
-      date: "2024-01-15",
-      read: true,
-      priority: "medium"
-    },
-    {
-      id: 3,
-      type: "feedback",
-      title: "Nuevo comentario del Dr. Ana López",
-      message: "El doctor ha dejado comentarios adicionales en tu consulta del paciente Pedro Rodríguez.",
-      date: "2024-01-14",
-      read: false,
-      priority: "medium"
+  const handleMarkAsRead = async (id) => {
+    try {
+      await apiService.markNotificationAsRead(id);
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+      setNotificationCount(prev => prev - 1);
+    } catch {
+      alert("No se pudo marcar como leída.");
     }
-  ];
+  };
 
   // Componente Button
   const Button = ({ 
@@ -159,7 +169,13 @@ export function StudentNotifications () {
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto space-y-6">
-            {notifications.map((notification) => (
+            {loading ? (
+              <div className="text-center text-lg py-10">Cargando notificaciones...</div>
+            ) : error ? (
+              <div className="text-center text-destructive py-10">{error}</div>
+            ) : notifications.length === 0 ? (
+              <div className="text-center text-muted-foreground py-10">No tienes notificaciones.</div>
+            ) : notifications.map((notification) => (
               <Card key={notification.id} className={`medical-card ${!notification.read ? 'border-primary' : ''}`}>
                 <CardHeader>
                   <CardTitle className="flex justify-between items-start">
@@ -175,9 +191,11 @@ export function StudentNotifications () {
                     <span className="text-sm text-muted-foreground">
                       {new Date(notification.date).toLocaleDateString('es-ES')}
                     </span>
-                    <Button variant="outline" size="sm">
-                      Ver detalles
-                    </Button>
+                    {!notification.read && (
+                      <Button variant="outline" size="sm" onClick={() => handleMarkAsRead(notification.id)}>
+                        Marcar como leída
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>

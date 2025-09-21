@@ -1,29 +1,37 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { parseJwt } from "../utils/utils";
 
 // Utilidad para combinar clases
-const cn = (...classes) => classes.filter(Boolean).join(' ');
+const cn = (...classes) => classes.filter(Boolean).join(" ");
 
 // Componente Button con los estilos proporcionados
-const buttonVariants = ({ variant = "default", size = "default", className = "" }) => {
-  const baseClasses = "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0";
-  
+const buttonVariants = ({
+  variant = "default",
+  size = "default",
+  className = "",
+}) => {
+  const baseClasses =
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0";
+
   const variantClasses = {
     default: "bg-primary text-primary-foreground hover:bg-primary/90",
-    destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-    outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+    destructive:
+      "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+    outline:
+      "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
     secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
     ghost: "hover:bg-accent hover:text-accent-foreground",
     link: "text-primary underline-offset-4 hover:underline",
   };
-  
+
   const sizeClasses = {
     default: "h-10 px-4 py-2",
     sm: "h-9 rounded-md px-3",
     lg: "h-11 rounded-md px-8",
     icon: "h-10 w-10",
   };
-  
+
   return cn(
     baseClasses,
     variantClasses[variant] || variantClasses.default,
@@ -32,25 +40,25 @@ const buttonVariants = ({ variant = "default", size = "default", className = "" 
   );
 };
 
-const Button = ({ 
-  variant = "default", 
-  size = "default", 
-  className = "", 
-  children, 
-  asChild = false, 
+const Button = ({
+  variant = "default",
+  size = "default",
+  className = "",
+  children,
+  asChild = false,
   onClick,
-  ...props 
+  ...props
 }) => {
   const classes = buttonVariants({ variant, size, className });
-  
+
   if (asChild) {
     return React.cloneElement(React.Children.only(children), {
-      className: `${children.props.className || ''} ${classes}`,
+      className: `${children.props.className || ""} ${classes}`,
       onClick,
-      ...props
+      ...props,
     });
   }
-  
+
   return (
     <button className={classes} onClick={onClick} {...props}>
       {children}
@@ -60,15 +68,19 @@ const Button = ({
 
 // Componente Badge con los estilos proporcionados
 const badgeVariants = ({ variant = "default", className = "" }) => {
-  const baseClasses = "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2";
-  
+  const baseClasses =
+    "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2";
+
   const variantClasses = {
-    default: "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
-    secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-    destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+    default:
+      "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+    secondary:
+      "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+    destructive:
+      "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
     outline: "text-foreground",
   };
-  
+
   return cn(
     baseClasses,
     variantClasses[variant] || variantClasses.default,
@@ -76,25 +88,17 @@ const badgeVariants = ({ variant = "default", className = "" }) => {
   );
 };
 
-const Badge = ({ 
-  variant = "default", 
-  className = "", 
-  children 
-}) => {
+const Badge = ({ variant = "default", className = "", children }) => {
   const classes = badgeVariants({ variant, className });
-  
-  return (
-    <span className={classes}>
-      {children}
-    </span>
-  );
+
+  return <span className={classes}>{children}</span>;
 };
 
 // Componente DropdownMenu mejorado
 const DropdownMenu = ({ children, isOpen, onClose }) => {
   // Cerrar el menú al hacer clic fuera de él
   const menuRef = React.useRef(null);
-  
+
   React.useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -103,35 +107,41 @@ const DropdownMenu = ({ children, isOpen, onClose }) => {
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
   return (
-    <div ref={menuRef} className="absolute right-0 z-50 w-48 mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5">
-      <div className="py-1">
-        {children}
-      </div>
+    <div
+      ref={menuRef}
+      className="absolute right-0 z-50 w-48 mt-2 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5"
+    >
+      <div className="py-1">{children}</div>
     </div>
   );
 };
 
 // Componente DropdownMenuTrigger - CORREGIDO: No usar button dentro de button
-const DropdownMenuTrigger = ({ asChild = false, children, onClick, ...props }) => {
+const DropdownMenuTrigger = ({
+  asChild = false,
+  children,
+  onClick,
+  ...props
+}) => {
   if (asChild) {
     return React.cloneElement(React.Children.only(children), {
       ...props,
-      className: `${children.props.className || ''} cursor-pointer`,
-      onClick
+      className: `${children.props.className || ""} cursor-pointer`,
+      onClick,
     });
   }
-  
+
   return (
     <div className="cursor-pointer" onClick={onClick} {...props}>
       {children}
@@ -141,16 +151,17 @@ const DropdownMenuTrigger = ({ asChild = false, children, onClick, ...props }) =
 
 // Componente DropdownMenuItem
 const DropdownMenuItem = ({ asChild = false, children, onClick, ...props }) => {
-  const baseClasses = "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900";
-  
+  const baseClasses =
+    "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900";
+
   if (asChild) {
     return React.cloneElement(React.Children.only(children), {
       ...props,
-      className: `${children.props.className || ''} ${baseClasses}`,
-      onClick
+      className: `${children.props.className || ""} ${baseClasses}`,
+      onClick,
     });
   }
-  
+
   return (
     <button className={baseClasses} onClick={onClick} {...props}>
       {children}
@@ -159,78 +170,31 @@ const DropdownMenuItem = ({ asChild = false, children, onClick, ...props }) => {
 };
 
 // Interface para las props del Header
-const Header = ({ 
-  isAuthenticated = false, 
-  userType, 
-  userName: initialUserName, 
+const Header = ({
+  isAuthenticated = false,
+  userType,
+  userName: initialUserName,
   notificationCount = 0,
   onLogout,
-  token // Añadimos el token JWT para las peticiones
+  token, // Añadimos el token JWT para las peticiones
 }) => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [userName, setUserName] = useState(initialUserName || "Cargando...");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
 
   const isActive = (path) => location.pathname === path;
 
-  // Función para obtener el nombre del usuario autenticado
-  const fetchUserName = async () => {
-    if (!isAuthenticated || !token) return;
-    
-    setIsLoading(true);
-    try {
-      let endpoint = "";
-      
-      // Determinar el endpoint según el tipo de usuario
-      if (userType === 'student') {
-        endpoint = "/students"; // Ajusta según tu API
-      } else if (userType === 'doctor') {
-        endpoint = "/doctors"; // Ajusta según tu API
-      } else if (userType === 'admin') {
-        endpoint = "/admin"; // Ajusta según tu API
-      }
-      
-      if (!endpoint) {
-        setUserName("Usuario");
-        return;
-      }
-      
-      const response = await fetch(`http://rudy-backend-e2itqr-09d86f-31-97-130-237.traefik.me/${endpoint}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const userData = await response.json();
-        // Ajusta según la estructura de respuesta de tu API
-        setUserName(userData.username || userData.email || "Usuario");
-      } else {
-        setUserName("Usuario");
-      }
-    } catch (error) {
-      console.error("Error al obtener nombre de usuario:", error);
-      setUserName("Usuario");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Efecto para cargar el nombre del usuario cuando se autentica
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchUserName();
-    }
+    const tokenData = parseJwt(localStorage.getItem("authToken"));
+    console.log("Token data:", tokenData);
+    setUserName(tokenData?.username || "Cargando...");
   }, [isAuthenticated, token, userType]);
 
-  // Función para determinar la ruta del dashboard según el tipo de usuario
   const getDashboardPath = () => {
     if (!isAuthenticated) return "/";
-    return userType === 'student' ? "/student/dashboard" : "/doctor/dashboard";
+    return userType === "student" ? "/student/dashboard" : "/doctor/dashboard";
   };
 
   const publicNavItems = [
@@ -256,7 +220,9 @@ const Header = ({
             <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent">
               <i className="text-lg text-white fas fa-user-md"></i>
             </div>
-            <span className="text-2xl font-bold font-heading gradient-text">MedHistory</span>
+            <span className="text-2xl font-bold font-heading gradient-text">
+              MedHistory
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -285,7 +251,7 @@ const Header = ({
             ) : (
               <>
                 {/* Authenticated Navigation */}
-                {userType === 'student' && (
+                {userType === "student" && (
                   <Button variant="outline" asChild>
                     <Link to="/student/consultation">
                       <i className="mr-2 fas fa-file-medical"></i>
@@ -293,8 +259,8 @@ const Header = ({
                     </Link>
                   </Button>
                 )}
-                
-                {userType === 'admin' && (
+
+                {userType === "admin" && (
                   <>
                     <Button variant="outline" asChild>
                       <Link to="/admin/register">
@@ -304,10 +270,15 @@ const Header = ({
                     </Button>
                   </>
                 )}
-                
+
                 {/* Notifications */}
-                {userType !== 'admin' && (
-                  <Button variant="outline" size="icon" className="relative" asChild>
+                {userType !== "admin" && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="relative"
+                    asChild
+                  >
                     <Link to={`/${userType}/notifications`}>
                       <i className="fas fa-bell"></i>
                       {notificationCount > 0 && (
@@ -335,7 +306,7 @@ const Header = ({
                   </DropdownMenuTrigger>
                   <DropdownMenu isOpen={isDropdownOpen} onClose={closeDropdown}>
                     {/* Mostrar perfil solo para no administradores */}
-                    {userType !== 'admin' && (
+                    {userType !== "admin" && (
                       <DropdownMenuItem asChild>
                         <Link
                           to={`/${userType}/profile`}
@@ -349,6 +320,7 @@ const Header = ({
                     {/* Opción de cerrar sesión para todos los usuarios autenticados */}
                     <DropdownMenuItem
                       onClick={() => {
+                        localStorage.removeItem("authToken");
                         onLogout?.();
                         closeDropdown();
                       }}
@@ -369,7 +341,7 @@ const Header = ({
             className="md:hidden"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
-            <i className={`fas ${isMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
+            <i className={`fas ${isMenuOpen ? "fa-times" : "fa-bars"}`}></i>
           </Button>
         </div>
 
@@ -394,10 +366,7 @@ const Header = ({
                 ))}
                 <div className="flex flex-col space-y-2">
                   <Button asChild>
-                    <Link
-                      to="/login"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
+                    <Link to="/login" onClick={() => setIsMenuOpen(false)}>
                       Iniciar sesión
                     </Link>
                   </Button>
@@ -405,7 +374,7 @@ const Header = ({
               </div>
             ) : (
               <div className="flex flex-col space-y-4">
-                {userType === 'student' && (
+                {userType === "student" && (
                   <Link
                     to="/student/consultation"
                     className="flex items-center text-gray-700 hover:text-blue-600"
@@ -415,7 +384,7 @@ const Header = ({
                     Realizar consulta
                   </Link>
                 )}
-                {userType === 'admin' && (
+                {userType === "admin" && (
                   <>
                     <Link
                       to="/admin/register"
@@ -434,7 +403,7 @@ const Header = ({
                     </Link>
                   </>
                 )}
-                {userType !== 'admin' && (
+                {userType !== "admin" && (
                   <Link
                     to={`/${userType}/notifications`}
                     className="flex items-center text-gray-700 hover:text-blue-600"
@@ -449,7 +418,7 @@ const Header = ({
                     )}
                   </Link>
                 )}
-                {userType !== 'admin' && (
+                {userType !== "admin" && (
                   <Link
                     to={`/${userType}/profile`}
                     className="flex items-center text-gray-700 hover:text-blue-600"
@@ -461,6 +430,7 @@ const Header = ({
                 )}
                 <button
                   onClick={() => {
+                    localStorage.removeItem("authToken");
                     onLogout?.();
                     setIsMenuOpen(false);
                   }}

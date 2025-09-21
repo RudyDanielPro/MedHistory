@@ -1,18 +1,43 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Footer } from "../Components/Footer";
 import { Header } from "../Components/Header";
+import apiService from "../utils/apiService";
 
 const DoctorNotifications = () => {
   const navigate = useNavigate();
   const [userName] = useState("Dr. Carlos Mendoza");
-  const [notificationCount] = useState(5);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [pendingDocuments, setPendingDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const loadPendingDocuments = async () => {
+      try {
+        setLoading(true);
+        const documentsWithNotes = await apiService.getDocumentsWithMetadata();
+        
+        // Filter only pending documents (not evaluated)
+        const pending = documentsWithNotes.filter(doc => !doc.isEvaluated);
+        
+        setPendingDocuments(pending);
+        setNotificationCount(pending.length);
+      } catch (error) {
+        console.error('Error loading pending documents:', error);
+        setError('Error al cargar las consultas pendientes');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPendingDocuments();
+  }, []);
 
   const handleLogout = () => {
     navigate("/");
   };
 
-  // Componente Button
   const Button = ({ 
     children, 
     size = 'md', 
@@ -104,36 +129,6 @@ const DoctorNotifications = () => {
     );
   };
 
-  const notifications = [
-    {
-      id: 1,
-      type: "consultation",
-      title: "Nueva consulta de Ana García",
-      message: "Consulta de alta prioridad sobre probable apendicitis aguda requiere evaluación urgente.",
-      date: "2024-01-16",
-      read: false,
-      priority: "high"
-    },
-    {
-      id: 2,
-      type: "consultation",
-      title: "Consulta de Miguel Santos",
-      message: "Nueva consulta sobre bronquitis crónica enviada para evaluación.",
-      date: "2024-01-15",
-      read: false,
-      priority: "medium"
-    },
-    {
-      id: 3,
-      type: "reminder",
-      title: "Recordatorio de evaluaciones pendientes",
-      message: "Tienes 3 consultas pendientes de evaluación desde hace más de 24 horas.",
-      date: "2024-01-15",
-      read: true,
-      priority: "medium"
-    }
-  ];
-
   return (
     <div className="min-h-screen bg-background">
       <Header 
@@ -159,34 +154,94 @@ const DoctorNotifications = () => {
       <section className="py-16 bg-background">
         <div className="container px-4 mx-auto">
           <div className="max-w-4xl mx-auto space-y-6">
-            {notifications.map((notification) => (
-              <Card key={notification.id} className={`medical-card ${!notification.read ? 'border-primary' : ''}`}>
-                <CardHeader>
-                  <CardTitle className="flex items-start justify-between">
-                    <span className="text-foreground">{notification.title}</span>
-                    <Badge variant={notification.read ? "secondary" : "default"}>
-                      {notification.read ? "Leída" : "Nueva"}
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="mb-4 text-muted-foreground">{notification.message}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      {new Date(notification.date).toLocaleDateString('es-ES')}
-                    </span>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => navigate(`/doctor/evaluation/${notification.id}`)}
-                    >
-                      <i className="mr-2 fas fa-clipboard-check"></i>
-                      Evaluar consulta
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <i className="mr-3 text-2xl fas fa-spinner fa-spin text-primary"></i>
+                <span className="text-lg text-muted-foreground">Cargando consultas...</span>
+              </div>
+            ) : error ? (
+              <div className="p-6 text-center bg-destructive/10 rounded-lg">
+                <i className="mb-2 text-3xl fas fa-exclamation-triangle text-destructive"></i>
+                <p className="text-destructive">{error}</p>
+              </div>
+            ) : pendingDocuments.length === 0 ? (
+              <div className="p-8 text-center bg-muted/30 rounded-lg">
+                <i className="mb-4 text-4xl fas fa-check-circle text-accent"></i>
+                <h3 className="mb-2 text-xl font-semibold text-foreground">¡Todo evaluado!</h3>
+                <p className="text-muted-foreground">No hay consultas pendientes de evaluación</p>
+              </div>
+            ) : (
+              pendingDocuments.map((document) => (
+                <Card key={document.id} className="medical-card border-primary">
+                  <CardHeader>
+                    <CardTitle className="flex items-start justify-between">
+                      <span className="text-foreground">
+                        <i className="mr-2 fas fa-graduation-cap text-primary"></i>
+                        Nueva consulta de {document.studentName}
+                      </span>
+                      <Badge variant="default">
+                        Nueva
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          <i className="mr-1 fas fa-user"></i>
+                          Paciente: {document.patientName}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground mb-1">
+                          <i className="mr-1 fas fa-stethoscope"></i>
+                          Síntomas:
+                        </p>
+                        <p className="text-sm text-muted-foreground bg-muted/30 p-2 rounded">
+                          {document.symptoms.length > 100 
+                            ? `${document.symptoms.substring(0, 100)}...` 
+                            : document.symptoms}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground mb-1">
+                          <i className="mr-1 fas fa-diagnoses"></i>
+                          Diagnóstico propuesto:
+                        </p>
+                        <p className="text-sm text-muted-foreground bg-accent/10 p-2 rounded">
+                          {document.diagnosis.length > 100 
+                            ? `${document.diagnosis.substring(0, 100)}...` 
+                            : document.diagnosis}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between mt-4">
+                      <span className="text-sm text-muted-foreground">
+                        <i className="mr-1 fas fa-calendar"></i>
+                        {new Date(document.submittedDate).toLocaleDateString('es-ES')}
+                        <Badge className={`ml-2 ${
+                          document.priority === 'Alta' ? 'bg-destructive' :
+                          document.priority === 'Media' ? 'bg-secondary' : 'bg-muted'
+                        } text-white`}>
+                          <i className="mr-1 fas fa-exclamation-triangle"></i>
+                          {document.priority}
+                        </Badge>
+                      </span>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        asChild
+                      >
+                        <Link to={`/doctor/revision/${document.id}`}>
+                          <i className="mr-2 fas fa-clipboard-check"></i>
+                          Evaluar consulta
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </div>
       </section>

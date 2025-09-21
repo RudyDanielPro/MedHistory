@@ -155,8 +155,20 @@ const Login = () => {
 
       if(response.ok) {
         const { token, message } = data;
+        console.log("Respuesta del servidor:", token); // Log the entire response for debugging
         localStorage.setItem("authToken", token);
         localStorage.setItem("user", JSON.stringify(message.email));
+
+        let tokenTemp = localStorage.getItem("authToken")
+        await fetch(url, {
+          headers: {
+            "Authorization": `Bearer ${tokenTemp}`,
+            "Content-Type": "application/json"
+          },
+          method: "POST",
+          body: JSON.stringify({ email, password })
+        })
+
         
         toast({
           title: "Inicio de sesión exitoso",
