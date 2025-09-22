@@ -3,7 +3,6 @@ import { Header } from "../Components/Header";
 import { useState } from "react";
 
 export function Contact () {
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -12,29 +11,64 @@ export function Contact () {
   });
 
   const [toast, setToast] = useState({ show: false, title: "", description: "" });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     
-    // Simulate form submission
-    setToast({
-      show: true,
-      title: "Mensaje enviado",
-      description: "Hemos recibido tu mensaje. Te contactaremos pronto.",
-    });
-    
-    // Hide toast after 3 seconds
-    setTimeout(() => {
-      setToast({ show: false, title: "", description: "" });
-    }, 3000);
-    
-    // Reset form
-    setFormData({
-      name: "",
-      email: "",
-      subject: "",
-      message: ""
-    });
+    try {
+      // Llamar al endpoint para enviar el correo
+      const response = await fetch('http://rudy-backend-e2itqr-09d86f-31-97-130-237.traefik.me/email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: ['mendez10dev@gmail.com', 'rudydanielcarballo@gmail.com'],
+          from: formData.email,
+          fromName: formData.name,
+          message: formData.message,
+          subject: formData.subject
+        })
+      });
+
+      if (response.ok) {
+        setToast({
+          show: true,
+          title: "Mensaje enviado",
+          description: "Hemos recibido tu mensaje. Te contactaremos pronto.",
+        });
+      } else {
+        // Proporciona más información sobre el error
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Error del servidor: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setToast({
+        show: true,
+        title: "Error",
+        description: "Ha ocurrido un error al enviar el mensaje. Por favor, inténtalo de nuevo.",
+      });
+    } finally {
+      setIsLoading(false);
+      
+      // Hide toast after 3 seconds
+      setTimeout(() => {
+        setToast({ show: false, title: "", description: "" });
+      }, 3000);
+      
+      // Reset form only on success
+      if (toast.title !== "Error") {
+        setFormData({
+          name: "",
+          email: "",
+          subject: "",
+          message: ""
+        });
+      }
+    }
   };
 
   const handleInputChange = (e) => {
@@ -67,16 +101,28 @@ export function Contact () {
     }
   ];
 
-
-    return (
-        <>
-        <Header/>
+  return (
+    <>
+      <Header/>
+      
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className="fixed top-4 right-4 z-50 max-w-sm bg-white border-l-4 border-green-500 shadow-lg rounded-md p-4 flex items-start space-x-3 transform transition-all duration-300 ease-in-out">
+          <div className="flex-shrink-0">
+            <i className={`fas ${toast.title === "Error" ? "fa-exclamation-circle text-red-500" : "fa-check-circle text-green-500"} text-lg`}></i>
+          </div>
+          <div>
+            <h4 className="font-semibold text-gray-900">{toast.title}</h4>
+            <p className="mt-1 text-sm text-gray-600">{toast.description}</p>
+          </div>
+        </div>
+      )}
       
       {/* Contacto */}
       <section className="py-20 bg-gradient-to-br from-primary to-secondary text-primary-foreground">
         <div className="container px-4 mx-auto text-center">
           <h1 className="mb-6 text-4xl font-bold text-white md:text-5xl font-heading">
-            <i className="mr-4 fas fa-envelope"></i>        {/*Icono de mensaje*/}
+            <i className="mr-4 fas fa-envelope"></i>
             Contacto
           </h1>
           <p className="max-w-2xl mx-auto text-xl text-white/90">
@@ -99,76 +145,90 @@ export function Contact () {
                 </h2>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label htmlFor="name" className="block mb-2 text-sm font-medium text-foreground">
-                    Nombre completo
-                  </label>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 transition-colors border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent bg-input"
-                    required
-                  />
-                </div>
+                  <div>
+                    <label htmlFor="name" className="block mb-2 text-sm font-medium text-foreground">
+                      Nombre completo
+                    </label>
+                    <input
+                      id="name"
+                      name="name"
+                      type="text"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 transition-colors border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent bg-input"
+                      required
+                    />
+                  </div>
 
-                <div>
-                  <label htmlFor="email" className="block mb-2 text-sm font-medium text-foreground">
-                    Correo electrónico
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 transition-colors border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent bg-input"
-                    required
-                  />
-                </div>
+                  <div>
+                    <label htmlFor="email" className="block mb-2 text-sm font-medium text-foreground">
+                      Correo electrónico
+                    </label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 transition-colors border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent bg-input"
+                      required
+                    />
+                  </div>
 
-                <div>
-                  <label htmlFor="subject" className="block mb-2 text-sm font-medium text-foreground">
-                    Asunto
-                  </label>
-                  <select 
-                    value={formData.subject} 
-                    onChange={(e) => setFormData({...formData, subject: e.target.value})}
-                    className="w-full px-4 py-3 transition-colors border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                  <div>
+                    <label htmlFor="subject" className="block mb-2 text-sm font-medium text-foreground">
+                      Asunto
+                    </label>
+                    <select 
+                      value={formData.subject} 
+                      onChange={(e) => setFormData({...formData, subject: e.target.value})}
+                      className="w-full px-4 py-3 transition-colors border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                      required
+                    >
+                      <option value="">Selecciona un asunto</option>
+                      <option value="soporte-tecnico">Soporte Técnico</option>
+                      <option value="registro-doctor">Registro como Doctor</option>
+                      <option value="dudas-plataforma">Dudas sobre la Plataforma</option>
+                      <option value="sugerencias">Sugerencias</option>
+                      <option value="reportar-problema">Reportar Problema</option>
+                      <option value="otro">Otro</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="message" className="block mb-2 text-sm font-medium text-foreground">
+                      Mensaje (Escriba más de 10 letras)
+                    </label>
+                    <textarea
+                      id="message"
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors min-h-[120px]"
+                      placeholder="Describe tu consulta o mensaje..."
+                      required
+                    />
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    className="w-full px-6 py-3 font-medium text-white transition-colors rounded-lg bg-primary hover:bg-primary/90 disabled:opacity-70 disabled:cursor-not-allowed"
+                    disabled={isLoading}
                   >
-                    <option value="">Selecciona un asunto</option>
-                    <option value="soporte-tecnico">Soporte Técnico</option>
-                    <option value="registro-doctor">Registro como Doctor</option>
-                    <option value="dudas-plataforma">Dudas sobre la Plataforma</option>
-                    <option value="sugerencias">Sugerencias</option>
-                    <option value="reportar-problema">Reportar Problema</option>
-                    <option value="otro">Otro</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="message" className="block mb-2 text-sm font-medium text-foreground">
-                    Mensaje
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors min-h-[120px]"
-                    placeholder="Describe tu consulta o mensaje..."
-                    required
-                  />
-                </div>
-
-                <button type="submit" className="w-full px-6 py-3 font-medium text-white transition-colors rounded-lg bg-primary hover:bg-primary/90">
-                  <i className="mr-2 fas fa-paper-plane"></i>
-                  Enviar mensaje
-                </button>
-              </form>
-		          </div>
+                    {isLoading ? (
+                      <>
+                        <i className="mr-2 fas fa-spinner fa-spin"></i>
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        <i className="mr-2 fas fa-paper-plane"></i>
+                        Enviar mensaje
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
             </div>
 
             {/* Información de contacto */}
@@ -285,6 +345,6 @@ export function Contact () {
       </section>
         
       <Footer/>
-        </>
-    )
+    </>
+  );
 }
