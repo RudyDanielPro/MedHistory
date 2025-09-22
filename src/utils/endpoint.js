@@ -1,1 +1,1 @@
-export const endpoint = "http://localhost:3004";
+export const endpoint = "http://rudy-backend-e2itqr-09d86f-31-97-130-237.traefik.me";
