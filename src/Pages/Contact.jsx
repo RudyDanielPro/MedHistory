@@ -72,9 +72,21 @@ export function Contact () {
   };
 
   const handleInputChange = (e) => {
+    const { name, value } = e.target;
+  
+  // Validación específica para el campo "name"
+  if (name === "name") {
+    // Expresión regular que solo permite letras, espacios y acentos
+    const soloLetras = /^[a-zA-ZáéíóúñÑüÜ\s]*$/;
+    
+    // Si el valor NO coincide con la expresión regular, no actualizamos el estado
+    if (!soloLetras.test(value)) {
+      return; // No hace nada si contiene números
+    }
+  }
     setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
+      ...formData,                        // Manntiene los valores existentes
+      [e.target.name]: e.target.value     // Actualiza solo el campo modificado
     });
   };
 
@@ -153,6 +165,7 @@ export function Contact () {
                       id="name"
                       name="name"
                       type="text"
+                      placeholder="Your name"
                       value={formData.name}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 transition-colors border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent bg-input"
@@ -168,6 +181,7 @@ export function Contact () {
                       id="email"
                       name="email"
                       type="email"
+                      placeholder="Your Email"
                       value={formData.email}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 transition-colors border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent bg-input"
